@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Check My Steno</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      height: 100vh;
+    }
+    .sidebar {
+      width: 250px;
+      background-color: #004d40;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+    .sidebar h2 {
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+    .sidebar a {
+      color: white;
+      text-decoration: none;
+      margin: 10px 0;
+      cursor: pointer;
+    }
+    .sidebar a:hover {
+      text-decoration: underline;
+    }
+    .content {
+      flex: 1;
+      padding: 20px;
+      background-color: #f0f0f0;
+      overflow-y: auto;
+    }
+    iframe {
+      width: 100%;
+      height: calc(100vh - 40px);
+      border: none;
+      background: white;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>Check My Steno</h2>
+    <a onclick="loadTool('transcription-checker.html')">Transcription Checker</a>
+    <a onclick="loadTool('test-analysis.html')">Test Analysis</a>  <!-- Add this line -->
+    <a onclick="alert('Other tools coming soon...')">Other Tools</a>
+  </div>
+  <div class="content">
+    <iframe id="toolFrame" src=""></iframe>
+  </div>
+
+  <script>
+    function loadTool(tool) {
+      document.getElementById('toolFrame').src = tool;
+    }
+  </script>
+</body>
+</html>

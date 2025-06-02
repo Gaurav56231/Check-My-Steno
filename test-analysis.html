@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Test Analysis</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef2f5;
+      padding: 20px;
+    }
+    .option-btn {
+      padding: 10px 20px;
+      margin: 5px;
+      background-color: #00796b;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .option-btn:hover {
+      background-color: #004d40;
+    }
+    .test-list {
+      margin-top: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+    }
+    .test-item {
+      border-bottom: 1px solid #ccc;
+      padding: 10px 0;
+    }
+    .test-item:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Test Analysis</h2>
+  <button class="option-btn" onclick="showSection('spelling')">Spelling Mistakes</button>
+  <button class="option-btn" onclick="showSection('attempted')">Attempted Tests</button>
+
+  <div class="test-list" id="resultSection">
+    <p>Select an option above to view results.</p>
+  </div>
+
+  <script>
+    function showSection(type) {
+      const container = document.getElementById('resultSection');
+      container.innerHTML = '';
+
+      if (type === 'spelling') {
+        container.innerHTML = '<h3>Spelling Mistakes</h3><p>(Spelling data will be shown here)</p>';
+        // Future: Load spelling mistakes from storage
+      } else if (type === 'attempted') {
+        const tests = JSON.parse(localStorage.getItem("attemptedTests") || "[]");
+        if (tests.length === 0) {
+          container.innerHTML = '<p>No test attempts found.</p>';
+          return;
+        }
+
+        container.innerHTML = '<h3>Attempted Tests</h3>';
+        tests.forEach((t, index) => {
+          const item = document.createElement("div");
+          item.className = "test-item";
+          item.innerHTML = `
+            <strong>Test #${index + 1}</strong><br>
+            Date: ${t.date} | Time: ${t.time}<br>
+            Accuracy: ${t.accuracy}
+          `;
+          container.appendChild(item);
+        });
+      }
+    }
+  </script>
+
+</body>
+</html>

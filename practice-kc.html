@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KC Checker</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 20px;
+      background: #f4f4f4;
+      color: #333;
+    }
+    h1 {
+      color: #2c3e50;
+      text-align: center;
+    }
+    label {
+      font-weight: bold;
+    }
+    input, textarea, button, select {
+      padding: 10px;
+      margin: 8px 0;
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .mistake-full {
+      background-color: #f8d7da;
+    }
+    .mistake-half {
+      background-color: #fff3cd;
+    }
+    .original {
+      color: #777;
+    }
+    .filter-buttons {
+      margin-top: 10px;
+      text-align: center;
+    }
+    .filter-buttons button {
+      width: auto;
+      margin: 0 5px;
+    }
+    .header-summary {
+      background: #eaf2f8;
+      padding: 10px;
+      border-left: 5px solid #3498db;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>KC Checker</h1>
+
+  <label for="volume">Volume:</label>
+  <input type="number" id="volume" placeholder="Enter volume number (e.g., 1)" min="1" max="24" />
+
+  <label for="transcript">Transcript Number:</label>
+  <input type="number" id="transcript" placeholder="Enter transcript number (e.g., 1)" min="1" max="22" />
+
+  <button onclick="loadTranscript()">Load Transcript</button>
+
+  <div id="checker" style="display:none;">
+    <label for="typed">Your Transcription:</label>
+    <textarea id="typed" rows="10" placeholder="Type your transcription here..."></textarea>
+    <br />
+    <button onclick="checkTranscript()">Check My Steno</button>
+
+    <div class="filter-buttons">
+      <button onclick="filterMistakes('all')">Show All</button>
+      <button onclick="filterMistakes('full')">Full Mistakes Only</button>
+      <button onclick="filterMistakes('half')">Half Mistakes Only</button>
+    </div>
+
+    <div id="result" class="result"></div>
+  </div>
+
+  <script>
+    let originalText = "";
+
+    function loadTranscript() {
+      const vol = document.getElementById("volume").value;
+      const trn = document.getElementById("transcript").value;
+
+      if (!vol || !trn) {
+        alert("Please enter both volume and transcript number.");
+        return;
+      }
+
+      const filePath = `subfiles/Vol${vol}/T${trn}.txt`;
+
+      fetch(filePath)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Transcript not found.");
+          }
+          return response.text();
+        })
+        .then(text => {
+          originalText = text.trim().replace(/\s+/g, " ");
+          document.getElementById("checker").style.display = "block";
+          alert("Transcript loaded. Now enter your typed version below.");
+        })
+        .catch(error => {
+          alert("Error: " + error.message);
+        });
+    }
+
+    function checkTranscript() {
+      const typedText = document.getElementById("typed").value.trim().replace(/\s+/g, " ");
+      const originalWords = originalText.split(" ");
+      const typedWords = typedText.split(" ");
+      const resultDiv = document.getElementById("result");
+
+      let i = 0, j = 0;
+      let fullMistakes = 0, halfMistakes = 0;
+      let resultHTML = "";
+
+      while (i < originalWords.length || j < typedWords.length) {
+        const orig = originalWords[i] || "";
+        const typed = typedWords[j] || "";
+
+        if (orig === typed) {
+          resultHTML += `<span>${typed} </span>`;
+          i++; j++;
+        } else if (typedWords[j + 1] === orig) {
+          resultHTML += `<span class="mistake-full" data-type="omission" title="Omitted: ${orig}"></span>`;
+          fullMistakes++;
+          i++;
+        } else if (originalWords[i + 1] === typed) {
+          resultHTML += `<span class="mistake-full" data-type="extra" title="Extra: ${typed}">${typed} </span>`;
+          fullMistakes++;
+          j++;
+        } else if (levenshteinDistance(orig, typed) === 1) {
+          resultHTML += `<span class="mistake-half" data-type="half" title="Spelling Error: ${typed}">${typed} </span>`;
+          halfMistakes++;
+          i++; j++;
+        } else {
+          resultHTML += `<span class="mistake-full" data-type="full" title="Substitution: ${typed} != ${orig}">${typed} </span>`;
+          fullMistakes += 2;
+          i++; j++;
+        }
+      }
+
+      const totalWords = originalWords.length;
+      const totalTyped = typedWords.length;
+      const totalMistakes = fullMistakes + halfMistakes;
+      const accuracy = Math.max(0, 100 - (totalMistakes / totalWords) * 100).toFixed(2);
+
+      const summary = `
+        <div class="header-summary">
+          <strong>Original Words:</strong> ${totalWords} |
+          <strong>Your Words:</strong> ${totalTyped} |
+          <strong>Full Mistakes:</strong> ${fullMistakes} |
+          <strong>Half Mistakes:</strong> ${halfMistakes} |
+          <strong>Total Mistakes:</strong> ${totalMistakes} |
+          <strong>Accuracy:</strong> ${accuracy}%
+        </div><br/>
+      `;
+
+      resultDiv.innerHTML = summary + resultHTML;
+    }
+
+    function levenshteinDistance(a, b) {
+      const dp = Array(a.length + 1).fill(null).map(() => Array(b.length + 1).fill(0));
+
+      for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+      for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+
+      for (let i = 1; i <= a.length; i++) {
+        for (let j = 1; j <= b.length; j++) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+          dp[i][j] = Math.min(
+            dp[i - 1][j] + 1,
+            dp[i][j - 1] + 1,
+            dp[i - 1][j - 1] + cost
+          );
+        }
+      }
+
+      return dp[a.length][b.length];
+    }
+
+    function filterMistakes(type) {
+      const spans = document.querySelectorAll("#result span");
+
+      spans.forEach(span => {
+        const mistakeType = span.getAttribute("data-type");
+        if (type === "all") {
+          span.style.display = "";
+        } else if (mistakeType === type || (type === "full" && (mistakeType === "omission" || mistakeType === "extra" || mistakeType === "full"))) {
+          span.style.display = "";
+        } else {
+          span.style.display = "none";
+        }
+      });
+    }
+  </script>
+</body>
+</html>

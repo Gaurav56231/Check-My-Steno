@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Steno Transcription Checker</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f8fa;
+      padding: 20px;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #00796b;
+      color: white;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    .highlight {
+      padding: 2px 5px;
+      border-radius: 3px;
+      display: inline-block;
+      margin: 0 2px;
+    }
+    .extra { background-color: #fbb6ce; }
+    .omission { background-color: #a3f7bf; }
+    .substitution { background-color: #f28b82; text-decoration: line-through; }
+    .spelling { background-color: #fdecc8; }
+    .capitalization { background-color: #cce3ff; }
+    .punctuation { background-color: #d9c9f2; }
+    .legend {
+      margin-top: 15px;
+      background: white;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    .legend h3 {
+      margin-bottom: 10px;
+    }
+    .legend-item {
+      margin: 4px 0;
+    }
+    .legend-color {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      border-radius: 3px;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+
+    .report-box {
+      background: #00796b;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin: 5px;
+      display: inline-block;
+      font-weight: bold;
+    }
+    .report-box.red { background: red; }
+    .report-box.orange { background: orange; }
+
+    #result {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-top: 20px;
+    }
+
+    .dropdown {
+      position: relative;
+      display: inline-block;
+      margin-top: 10px;
+    }
+
+    .dropdown-btn {
+      background-color: #00796b;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: white;
+      min-width: 220px;
+      box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+      z-index: 1;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .dropdown-content div {
+      padding: 12px 16px;
+      cursor: pointer;
+      color: #00796b;
+    }
+
+    .dropdown-content div:hover {
+      background-color: #eee;
+    }
+
+    .show { display: block; }
+  </style>
+</head>
+<body>
+
+  <h1>Steno Transcription Checker</h1>
+
+  <label for="original">Original Passage:</label>
+  <textarea id="original"></textarea>
+
+  <label for="typed">Typed Transcription:</label>
+  <textarea id="typed"></textarea>
+
+  <label>
+    <input type="checkbox" id="checkPunctuation" />
+    Include Punctuation
+  </label>
+
+  <br/><br/>
+  <button onclick="submitFinal()">Submit Final</button>
+
+  <div class="legend">
+    <h3>Legend:</h3>
+    <div class="legend-item"><span class="legend-color" style="background:#fbb6ce;"></span> Additions</div>
+    <div class="legend-item"><span class="legend-color" style="background:#a3f7bf;"></span> Omissions</div>
+    <div class="legend-item"><span class="legend-color" style="background:#f28b82;"></span> Substitutions</div>
+    <div class="legend-item"><span class="legend-color" style="background:#fdecc8;"></span> Spelling Mistakes</div>
+    <div class="legend-item"><span class="legend-color" style="background:#cce3ff;"></span> Capitalization Mistakes</div>
+    <div class="legend-item"><span class="legend-color" style="background:#d9c9f2;"></span> Punctuation Mistakes</div>
+  </div>
+
+  <div class="dropdown">
+    <button onclick="toggleDropdown()" class="dropdown-btn">Filter Mistakes</button>
+    <div id="dropdownContent" class="dropdown-content">
+      <div onclick="filterMistakes('omission')">Show Omissions</div>
+      <div onclick="filterMistakes('substitution')">Show Substitutions</div>
+      <div onclick="filterMistakes('spelling')">Show Spelling Mistakes</div>
+      <div onclick="filterMistakes('capitalization')">Show Capitalization Mistakes</div>
+      <div onclick="filterMistakes('punctuation')">Show Punctuation Mistakes</div>
+      <div onclick="filterMistakes('omission-substitution')">Show Omission + Substitution</div>
+      <div onclick="filterMistakes('all')">Show All Mistakes</div>
+    </div>
+  </div>
+
+  <div id="result"></div>
+
+  <script>
+    let lastResultHTML = '';
+
+    function isPunctuation(char) {
+      return /[.,!?;:'"-]/.test(char);
+    }
+
+    function levenshtein(a, b) {
+      const dp = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
+      for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+      for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+      for (let i = 1; i <= a.length; i++) {
+        for (let j = 1; j <= b.length; j++) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+          dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+        }
+      }
+      return dp[a.length][b.length];
+    }
+
+    function toggleDropdown() {
+      document.getElementById("dropdownContent").classList.toggle("show");
+    }
+
+    function submitFinal() {
+      const originalText = document.getElementById("original").value.trim();
+      const typedText = document.getElementById("typed").value.trim();
+      const checkPunct = document.getElementById("checkPunctuation").checked;
+
+      const originalWords = originalText.split(/\s+/);
+      const typedWords = typedText.split(/\s+/);
+
+      const dp = Array.from({ length: originalWords.length + 1 }, () =>
+        Array(typedWords.length + 1).fill(0)
+      );
+      const trace = Array.from({ length: originalWords.length + 1 }, () =>
+        Array(typedWords.length + 1).fill("")
+      );
+
+      for (let i = 0; i <= originalWords.length; i++) dp[i][0] = i;
+      for (let j = 0; j <= typedWords.length; j++) dp[0][j] = j;
+
+      for (let i = 1; i <= originalWords.length; i++) {
+        for (let j = 1; j <= typedWords.length; j++) {
+          if (originalWords[i - 1] === typedWords[j - 1]) {
+            dp[i][j] = dp[i - 1][j - 1];
+            trace[i][j] = "match";
+          } else {
+            const subCost = dp[i - 1][j - 1] + 2;
+            const insCost = dp[i][j - 1] + 1;
+            const delCost = dp[i - 1][j] + 1;
+
+            const min = Math.min(subCost, insCost, delCost);
+            dp[i][j] = min;
+            trace[i][j] = min === subCost ? "sub" : min === insCost ? "ins" : "del";
+          }
+        }
+      }
+
+      let i = originalWords.length;
+      let j = typedWords.length;
+      const alignment = [];
+
+      while (i > 0 || j > 0) {
+        if (i > 0 && j > 0 && trace[i][j] === "match") {
+          alignment.unshift({ type: "match", o: originalWords[i - 1], t: typedWords[j - 1] });
+          i--; j--;
+        } else if (i > 0 && j > 0 && trace[i][j] === "sub") {
+          alignment.unshift({ type: "sub", o: originalWords[i - 1], t: typedWords[j - 1] });
+          i--; j--;
+        } else if (j > 0 && trace[i][j] === "ins") {
+          alignment.unshift({ type: "ins", t: typedWords[j - 1] });
+          j--;
+        } else if (i > 0 && trace[i][j] === "del") {
+          alignment.unshift({ type: "del", o: originalWords[i - 1] });
+          i--;
+        }
+      }
+
+      let fullMistakes = 0, halfMistakes = 0, resultText = "<p>";
+
+      for (const entry of alignment) {
+        if (entry.type === "match") {
+          resultText += `${entry.t} `;
+        } else if (entry.type === "del") {
+          resultText += `<span class='highlight omission'>${entry.o}</span> `;
+          fullMistakes++;
+        } else if (entry.type === "ins") {
+          resultText += `<span class='highlight extra'>${entry.t}</span> `;
+          fullMistakes++;
+        } else if (entry.type === "sub") {
+          const o = entry.o, t = entry.t;
+          if (o.toLowerCase() === t.toLowerCase()) {
+            resultText += `<span class='highlight capitalization'>${t}</span> `;
+            halfMistakes++;
+          } else if (levenshtein(o, t) <= 2) {
+            resultText += `<span class='highlight spelling'>${o} (<strong>${t}</strong>)</span> `;
+            halfMistakes++;
+          } else if (!checkPunct && (isPunctuation(o) || isPunctuation(t))) {
+            resultText += `${t} `;
+          } else if (checkPunct && isPunctuation(o) !== isPunctuation(t)) {
+            resultText += `<span class='highlight punctuation'>${t}</span> `;
+            halfMistakes++;
+          } else {
+            resultText += `<span class='highlight substitution'>${t}</span> <span class='highlight omission'>(${o})</span> `;
+            fullMistakes += 2;
+          }
+        }
+      }
+
+      resultText += "</p>";
+      const totalWords = originalWords.length;
+      const totalMistakes = fullMistakes + (halfMistakes * 0.5);
+      const accuracy = (((totalWords - totalMistakes) / totalWords) * 100).toFixed(2);
+
+      lastResultHTML = `
+        <h3>Result Sheet:</h3>
+        <div class='report-box'>Total Words: ${totalWords}</div>
+        <div class='report-box red'>Full Mistakes: ${fullMistakes}</div>
+        <div class='report-box orange'>Half Mistakes: ${halfMistakes}</div>
+        <div class='report-box'>Mistake %: ${((totalMistakes / totalWords) * 100).toFixed(2)}%</div>
+        <div class='report-box'>Accuracy: ${accuracy}%</div>
+        ${resultText}
+      `;
+
+      document.getElementById("result").innerHTML = lastResultHTML;
+    }
+
+    function filterMistakes(type) {
+      if (!lastResultHTML) return;
+
+      const container = document.createElement("div");
+      container.innerHTML = lastResultHTML;
+
+      const spans = container.querySelectorAll(".highlight");
+
+      spans.forEach(span => {
+        const className = span.classList.contains('omission') ? 'omission' :
+                          span.classList.contains('substitution') ? 'substitution' :
+                          span.classList.contains('spelling') ? 'spelling' :
+                          span.classList.contains('capitalization') ? 'capitalization' :
+                          span.classList.contains('punctuation') ? 'punctuation' :
+                          span.classList.contains('extra') ? 'extra' : '';
+
+        if (type === "all") return;
+        if (type === "omission-substitution") {
+          if (!["omission", "substitution"].includes(className)) span.style.display = "none";
+        } else if (className !== type) {
+          span.style.display = "none";
+        }
+      });
+
+      document.getElementById("result").innerHTML = container.innerHTML;
+    }
+  </script>
+</body>
+</html>
