@@ -11,7 +11,12 @@
   <!-- Font Awesome Icons -->
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
   <style>
+    /* All original styles from indexnew.html */
     :root {
       --primary-color: #0d9488;
       --hover-color: #0f766e;
@@ -245,20 +250,6 @@
       cursor: pointer;
     }
 
-    .theme-selector {
-      margin-top: 15px;
-      padding: 10px;
-      background-color: var(--white);
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    .theme-selector select {
-      padding: 10px;
-      font-size: 16px;
-      width: 100%;
-    }
-
     #greeting {
       font-size: 2rem;
       font-weight: bold;
@@ -269,7 +260,6 @@
   </style>
 </head>
 <body>
-  <!-- Login Screen -->
   <div id="loginContainer">
     <div class="login-box">
       <h2>Login to Continue</h2>
@@ -283,7 +273,6 @@
     </div>
   </div>
 
-  <!-- Subscription Overlay -->
   <div id="subscribeOverlay">
     <button class="close-btn" onclick="hideSubscribe()">&times;</button>
     <h1>Subscribe Now</h1>
@@ -291,7 +280,6 @@
     <button onclick="iPaid()">I Paid</button>
   </div>
 
-  <!-- Main App Container -->
   <div class="main-container" id="mainContainer" style="display: none; flex;">
     <div class="sidebar">
       <div class="logo"><i class="fas fa-keyboard"></i>Check My Steno</div>
@@ -312,20 +300,20 @@
   </div>
 
   <script>
-    // List of valid access codes (change as needed)
-    const validAccessCodes = [
-      'ABCDE12345',
-      'XYZ7890',
-      'MYCODE2025',
-      'ACCESS2025',
-      'GAURAV',
-      // Add more valid codes here
-    ];
+    const firebaseConfig = {
+      apiKey: "AIzaSyDPkUWIrsibI-hzKJ8ljhvawdJ9Nq4-cpE",
+      authDomain: "checkmysteno.firebaseapp.com",
+      projectId: "checkmysteno",
+      storageBucket: "checkmysteno.firebasestorage.app",
+      messagingSenderId: "719325115943",
+      appId: "1:719325115943:web:0dd50a67978816d42a8002"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    // State: logged-in user info
     let user = null;
 
-    function login() {
+    async function login() {
       const name = document.getElementById('name').value.trim();
       const email = document.getElementById('email').value.trim();
       const code = document.getElementById('accessCode').value.trim();
@@ -335,28 +323,27 @@
         return;
       }
 
-      // Validate access code against the valid list (case-insensitive)
-      const isValidCode = validAccessCodes.some(
-        validCode => validCode.toLowerCase() === code.toLowerCase()
-      );
+      try {
+        const docRef = db.collection("accessCodes").doc(code);
+        const doc = await docRef.get();
 
-      if (!isValidCode) {
-        alert('Access code is invalid. Please check your code or subscribe.');
-        return;
+        if (doc.exists && doc.data().valid === true) {
+          user = { name, email, code };
+          localStorage.setItem('checkMyStenoUser', JSON.stringify(user));
+          showMainApp();
+        } else {
+          alert('Access code is invalid or expired.');
+        }
+      } catch (error) {
+        console.error('Error during login:', error);
+        alert('Login failed. Please try again.');
       }
-
-      // If valid, save user info and show main app
-      user = { name, email, code };
-      localStorage.setItem('checkMyStenoUser', JSON.stringify(user));
-      showMainApp();
     }
 
     function showMainApp() {
       document.getElementById('loginContainer').style.display = 'none';
       document.getElementById('mainContainer').style.display = 'flex';
-      // Show greeting with user name
       document.getElementById('greeting').textContent = `Welcome, ${user.name}!`;
-      // Reset default UI
       resetMainUI();
     }
 
@@ -376,7 +363,6 @@
       document.getElementById('accessCode').value = '';
     }
 
-    // Load tool pages inside iframe
     function loadTool(page) {
       const iframe = document.getElementById('toolFrame');
       iframe.style.display = 'block';
@@ -384,7 +370,6 @@
       document.getElementById('defaultMessage').style.display = 'none';
     }
 
-    // Reset main UI to default state
     function resetMainUI() {
       const iframe = document.getElementById('toolFrame');
       iframe.style.display = 'none';
@@ -392,7 +377,6 @@
       document.getElementById('defaultMessage').style.display = 'block';
     }
 
-    // Subscription overlay handling
     function showSubscribe() {
       document.getElementById('subscribeOverlay').classList.add('active');
     }
@@ -402,19 +386,16 @@
     }
 
     function iPaid() {
-      // Redirect to your Google Form for subscription confirmation
       const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSep9q-qhIlWOFNIkwPUXfnJNnCzkzkACO2qA1sGXdIqVZj-nw/viewform?usp=header';
       window.open(formUrl, '_blank');
       alert('Thank you! Please submit the form to receive your access code.');
       hideSubscribe();
     }
 
-    // Settings toggle (optional placeholder)
     function toggleSettings() {
       alert('Settings feature coming soon!');
     }
 
-    // Auto-login if user data in localStorage
     window.onload = function () {
       const storedUser = localStorage.getItem('checkMyStenoUser');
       if (storedUser) {
