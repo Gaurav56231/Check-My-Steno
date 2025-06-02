@@ -1,67 +1,427 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Check My Steno</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome Icons -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
   <style>
-    body {
+    :root {
+      --primary-color: #0d9488;
+      --hover-color: #0f766e;
+      --background: #f9f9f9;
+      --white: #ffffff;
+      --text-color: #333;
+    }
+
+    * {
+      box-sizing: border-box;
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
+      padding: 0;
+    }
+
+    body, html {
+      font-family: 'Inter', sans-serif;
+      height: 100%;
+      background-color: var(--background);
+    }
+
+    #loginContainer {
       display: flex;
+      justify-content: center;
+      align-items: center;
       height: 100vh;
+      background: var(--background);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      left: 0;
+      z-index: 10;
     }
-    .sidebar {
-      width: 250px;
-      background-color: #004d40;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
+
+    .login-box {
+      background: var(--white);
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
     }
-    .sidebar h2 {
-      font-size: 22px;
+
+    .login-box h2 {
       margin-bottom: 20px;
+      color: var(--primary-color);
     }
-    .sidebar a {
-      color: white;
-      text-decoration: none;
+
+    .login-box input {
+      width: 100%;
+      padding: 12px;
       margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 14px;
+      background-color: var(--primary-color);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background-color 0.3s ease;
+    }
+
+    .login-box button:hover {
+      background-color: var(--hover-color);
+    }
+
+    .alt-option {
+      margin-top: 15px;
+      font-size: 14px;
+      color: var(--text-color);
+    }
+
+    .alt-option a {
+      color: var(--primary-color);
+      text-decoration: underline;
       cursor: pointer;
     }
-    .sidebar a:hover {
-      text-decoration: underline;
+
+    #mainContainer {
+      display: none;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      position: relative;
+      flex-direction: row;
     }
+
+    .sidebar {
+      width: 260px;
+      background: var(--primary-color);
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+      padding: 30px 20px;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .logo {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo i {
+      font-size: 26px;
+    }
+
+    .sidebar a {
+      font-size: 17px;
+      padding: 14px 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      background-color: transparent;
+      color: var(--white);
+      text-decoration: none;
+      transition: background-color 0.3s, transform 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .sidebar a:hover {
+      background-color: var(--hover-color);
+      transform: translateX(5px);
+    }
+
     .content {
       flex: 1;
       padding: 20px;
-      background-color: #f0f0f0;
-      overflow-y: auto;
+      background-color: var(--white);
+      border-radius: 0 10px 10px 0;
+      display: flex;
+      flex-direction: column;
+      position: relative;
     }
+
+    .default-message {
+      text-align: center;
+      font-size: 1.5rem;
+      color: #666;
+      margin-top: 30vh;
+      opacity: 0;
+      animation: fadeIn 1s ease-in-out forwards;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
     iframe {
-      width: 100%;
-      height: calc(100vh - 40px);
+      flex: 1;
       border: none;
-      background: white;
+      width: 100%;
+      border-radius: 8px;
+      margin-top: 10px;
+      display: none;
+      animation: fadeIn 0.8s ease-in-out forwards;
+    }
+
+    #subscribeOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background-color: rgba(13, 148, 136, 0.95);
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-size: 1.2rem;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      padding: 30px;
+      text-align: center;
+    }
+
+    #subscribeOverlay.active {
+      display: flex;
+    }
+
+    #subscribeOverlay h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+    }
+
+    #subscribeOverlay p {
+      font-size: 1.5rem;
+      margin-bottom: 30px;
+      line-height: 1.4;
+    }
+
+    #subscribeOverlay button {
+      font-size: 1.2rem;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 8px;
+      background-color: var(--white);
+      color: var(--primary-color);
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: background-color 0.3s ease;
+    }
+
+    #subscribeOverlay button:hover {
+      background-color: #d4f1ef;
+    }
+
+    #subscribeOverlay .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 2rem;
+      background: transparent;
+      color: var(--white);
+      border: none;
+      cursor: pointer;
+    }
+
+    .theme-selector {
+      margin-top: 15px;
+      padding: 10px;
+      background-color: var(--white);
       border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .theme-selector select {
+      padding: 10px;
+      font-size: 16px;
+      width: 100%;
+    }
+
+    #greeting {
+      font-size: 2rem;
+      font-weight: bold;
+      text-align: center;
+      margin: 30px 0;
+      color: var(--primary-color);
     }
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <h2>Check My Steno</h2>
-    <a onclick="loadTool('transcription-checker.html')">Transcription Checker</a>
-    <a onclick="loadTool('test-analysis.html')">Test Analysis</a>  <!-- Add this line -->
-    <a onclick="alert('Other tools coming soon...')">Other Tools</a>
+  <!-- Login Screen -->
+  <div id="loginContainer">
+    <div class="login-box">
+      <h2>Login to Continue</h2>
+      <input type="text" id="name" placeholder="Your Name" autocomplete="off" />
+      <input type="email" id="email" placeholder="Your Email" autocomplete="off" />
+      <input type="text" id="accessCode" placeholder="Access Code" autocomplete="off" />
+      <button onclick="login()">Login</button>
+      <div class="alt-option">
+        Don't have a code? <a onclick="showSubscribe()">Subscribe</a>
+      </div>
+    </div>
   </div>
-  <div class="content">
-    <iframe id="toolFrame" src=""></iframe>
+
+  <!-- Subscription Overlay -->
+  <div id="subscribeOverlay">
+    <button class="close-btn" onclick="hideSubscribe()">&times;</button>
+    <h1>Subscribe Now</h1>
+    <p>To subscribe, please transfer <strong>₹100</strong> to the following UPI ID:<br /><strong>8470003027</strong></p>
+    <button onclick="iPaid()">I Paid</button>
+  </div>
+
+  <!-- Main App Container -->
+  <div class="main-container" id="mainContainer" style="display: none; flex;">
+    <div class="sidebar">
+      <div class="logo"><i class="fas fa-keyboard"></i>Check My Steno</div>
+      <a onclick="loadTool('home.html')"><i class="fas fa-house"></i> Home</a>
+      <a onclick="loadTool('transcription-checker.html')"><i class="fas fa-pen"></i> Trans Check</a>
+      <a onclick="loadTool('test-analysis.html')"><i class="fas fa-chart-bar"></i> Test Analysis</a>
+      <a onclick="loadTool('practice-kc.html')"><i class="fas fa-book"></i> Practice KC</a>
+      <a onclick="showSubscribe()"><i class="fas fa-money-check"></i> Subscription</a>
+      <a onclick="loadTool('about.html')"><i class="fas fa-circle-info"></i> About</a>
+      <a onclick="toggleSettings()"><i class="fas fa-gear"></i> Settings</a>
+      <button onclick="logout()" style="margin-top:auto; padding: 12px; background: #f87171; border: none; border-radius: 8px; color: white; cursor:pointer; font-weight:bold; font-size: 16px;">Logout</button>
+    </div>
+    <div class="content">
+      <div id="greeting">Welcome!</div>
+      <div class="default-message" id="defaultMessage">Select an option from the sidebar to begin.</div>
+      <iframe id="toolFrame" src="" frameborder="0"></iframe>
+    </div>
   </div>
 
   <script>
-    function loadTool(tool) {
-      document.getElementById('toolFrame').src = tool;
+    // List of valid access codes (change as needed)
+    const validAccessCodes = [
+      'ABCDE12345',
+      'XYZ7890',
+      'MYCODE2025',
+      'ACCESS2025',
+      'GAURAV',
+      // Add more valid codes here
+    ];
+
+    // State: logged-in user info
+    let user = null;
+
+    function login() {
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const code = document.getElementById('accessCode').value.trim();
+
+      if (!name || !email || !code) {
+        alert('Please fill in all fields.');
+        return;
+      }
+
+      // Validate access code against the valid list (case-insensitive)
+      const isValidCode = validAccessCodes.some(
+        validCode => validCode.toLowerCase() === code.toLowerCase()
+      );
+
+      if (!isValidCode) {
+        alert('Access code is invalid. Please check your code or subscribe.');
+        return;
+      }
+
+      // If valid, save user info and show main app
+      user = { name, email, code };
+      localStorage.setItem('checkMyStenoUser', JSON.stringify(user));
+      showMainApp();
     }
+
+    function showMainApp() {
+      document.getElementById('loginContainer').style.display = 'none';
+      document.getElementById('mainContainer').style.display = 'flex';
+      // Show greeting with user name
+      document.getElementById('greeting').textContent = `Welcome, ${user.name}!`;
+      // Reset default UI
+      resetMainUI();
+    }
+
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('checkMyStenoUser');
+        user = null;
+        document.getElementById('mainContainer').style.display = 'none';
+        document.getElementById('loginContainer').style.display = 'flex';
+        clearLoginFields();
+      }
+    }
+
+    function clearLoginFields() {
+      document.getElementById('name').value = '';
+      document.getElementById('email').value = '';
+      document.getElementById('accessCode').value = '';
+    }
+
+    // Load tool pages inside iframe
+    function loadTool(page) {
+      const iframe = document.getElementById('toolFrame');
+      iframe.style.display = 'block';
+      iframe.src = page;
+      document.getElementById('defaultMessage').style.display = 'none';
+    }
+
+    // Reset main UI to default state
+    function resetMainUI() {
+      const iframe = document.getElementById('toolFrame');
+      iframe.style.display = 'none';
+      iframe.src = '';
+      document.getElementById('defaultMessage').style.display = 'block';
+    }
+
+    // Subscription overlay handling
+    function showSubscribe() {
+      document.getElementById('subscribeOverlay').classList.add('active');
+    }
+
+    function hideSubscribe() {
+      document.getElementById('subscribeOverlay').classList.remove('active');
+    }
+
+    function iPaid() {
+      // Redirect to your Google Form for subscription confirmation
+      const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSep9q-qhIlWOFNIkwPUXfnJNnCzkzkACO2qA1sGXdIqVZj-nw/viewform?usp=header';
+      window.open(formUrl, '_blank');
+      alert('Thank you! Please submit the form to receive your access code.');
+      hideSubscribe();
+    }
+
+    // Settings toggle (optional placeholder)
+    function toggleSettings() {
+      alert('Settings feature coming soon!');
+    }
+
+    // Auto-login if user data in localStorage
+    window.onload = function () {
+      const storedUser = localStorage.getItem('checkMyStenoUser');
+      if (storedUser) {
+        user = JSON.parse(storedUser);
+        showMainApp();
+      }
+    };
   </script>
 </body>
 </html>
