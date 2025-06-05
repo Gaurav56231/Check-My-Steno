@@ -3,79 +3,72 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Check My Steno - Subfile Transcription Checker</title>
+  <title>SSC Steno Dictation & Transcription Tool</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.youtube.com/iframe_api"></script>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f5f8fa;
-      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f4f7fa;
       margin: 0;
+      padding: 20px;
     }
     h1 {
       text-align: center;
-      color: #00796b;
-      margin-bottom: 30px;
+      color: #333;
     }
-    #subfileGrid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill,minmax(180px,1fr));
-      gap: 15px;
-      margin-bottom: 20px;
-      max-width: 960px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .subfileCard {
+    #player-container, #typing-section, #transcribe-options, #result-container {
+      max-width: 900px;
+      margin: 20px auto;
       background: white;
-      border-radius: 8px;
-      padding: 15px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      cursor: pointer;
-      text-align: center;
-      font-weight: bold;
-      color: #00796b;
-      user-select: none;
-      transition: background-color 0.3s ease;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    .subfileCard:hover {
-      background-color: #d0f0e4;
-    }
-    #typingSection {
-      display: none;
-      max-width: 700px;
-      margin: 0 auto;
-    }
-    textarea {
+    #ytlink, select, textarea, button {
       width: 100%;
-      height: 140px;
-      margin-bottom: 15px;
       padding: 10px;
-      border-radius: 6px;
       font-size: 16px;
-      resize: vertical;
+      margin-top: 10px;
+      border-radius: 6px;
       border: 1px solid #ccc;
+      box-sizing: border-box;
     }
     button {
-      background-color: #00796b;
+      background: #007bff;
       color: white;
-      padding: 10px 20px;
-      font-size: 16px;
       border: none;
-      border-radius: 6px;
       cursor: pointer;
-      margin-bottom: 10px;
       transition: background-color 0.3s ease;
     }
     button:hover {
-      background-color: #005f56;
+      background: #0056b3;
     }
-    #backBtn {
-      background-color: #555;
-      margin-left: 10px;
+    #timerDisplay {
+      font-size: 18px;
+      font-weight: bold;
+      color: red;
+      margin-top: 10px;
+      text-align: center;
     }
-    #backBtn:hover {
-      background-color: #333;
+
+    /* ✅ Typing box style updated to match SSC interface exactly */
+    #typingBox {
+      width: 100%;
+      height: 300px;
+      font-size: 18px;
+      font-family: 'Courier New', monospace;
+      border: 2px solid #000;
+      padding: 20px;
+      box-sizing: border-box;
+      line-height: 1.6;
+      margin-top: 30px;
+      resize: none;
+      background: #fff;
+      border-radius: 0;
     }
+
     .highlight {
       padding: 2px 5px;
       border-radius: 3px;
@@ -88,327 +81,457 @@
     .spelling { background-color: #fdecc8; }
     .capitalization { background-color: #cce3ff; }
     .punctuation { background-color: #d9c9f2; }
-    .legend {
-      margin-top: 15px;
-      background: white;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      max-width: 700px;
-      margin-left: auto;
-      margin-right: auto;
-      font-size: 14px;
-      color: #444;
-    }
-    .legend h3 {
-      margin-bottom: 10px;
-      text-align: center;
-      color: #00796b;
-    }
-    .legend-item {
-      margin: 4px 0;
-    }
-    .legend-color {
-      display: inline-block;
-      width: 15px;
-      height: 15px;
-      border-radius: 3px;
-      margin-right: 10px;
-      vertical-align: middle;
-    }
-    #result {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-top: 20px;
-      max-width: 700px;
-      margin-left: auto;
-      margin-right: auto;
-      min-height: 120px;
-      font-size: 15px;
-      color: #222;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-    }
-    #checkPunctuation {
-      margin-left: 10px;
-      vertical-align: middle;
-    }
-    label[for="checkPunctuation"] {
-      cursor: pointer;
-      font-size: 14px;
-      color: #333;
-    }
-    /* Responsive tweaks */
-    @media (max-width: 480px) {
-      #subfileGrid {
-        grid-template-columns: repeat(auto-fill,minmax(140px,1fr));
-      }
-      button {
-        width: 100%;
-        margin: 5px 0;
-      }
-      #backBtn {
-        margin-left: 0;
-      }
-    }
   </style>
 </head>
 <body>
+ <h1>📝 SSC Steno Dictation & Transcription Tool</h1>
 
-  <h1>Check My Steno - Subfile Transcription Checker</h1>
-
-  <!-- Subfile Grid -->
-  <div id="subfileGrid">
-    <!-- Subfile cards inserted here dynamically -->
+  <div id="player-container">
+    <input id="ytlink" placeholder="Paste YouTube Dictation Link" />
+    <select id="speed">
+      <option value="original">Original</option>
+      <option value="60">60 WPM</option>
+      <option value="80" selected>80 WPM</option>
+      <option value="100">100 WPM</option>
+      <option value="120">120 WPM</option>
+    </select>
+    <button onclick="loadVideo()">▶️ Load Video</button>
+    <div id="player" style="margin-top:20px;"></div>
+    <div id="timerDisplay">Remaining Time: --:--</div>
   </div>
 
-  <!-- Typing Section -->
-  <div id="typingSection">
-    <label for="typed">Typed Transcription:</label>
-    <textarea id="typed" placeholder="Type your transcription here..."></textarea>
-
+  <div id="transcribe-options">
+    <select id="volume">
+      <option disabled selected>Select Volume</option>
+      <script>
+        for(let i=1; i<=24; i++) {
+          document.write(`<option value="${i}">Volume ${i}</option>`);
+        }
+      </script>
+    </select>
+    <select id="transcript">
+      <option disabled selected>Select Transcript</option>
+      <script>
+        for(let i=1; i<=22; i++) {
+          document.write(`<option value="${i}">Transcript ${i}</option>`);
+        }
+      </script>
+    </select>
+    <select id="timer-select">
+      <option value="50" selected>50 Minute Timer</option>
+      <option value="40">40 Minute Timer</option>
+    </select>
     <label>
       <input type="checkbox" id="checkPunctuation" />
-      Include Punctuation
+      Check Punctuation
     </label>
-    <br/><br/>
-    <button id="submitBtn">Submit Final</button>
-    <button id="backBtn">Back to Subfiles</button>
-
-    <div class="legend">
-      <h3>Legend:</h3>
-      <div class="legend-item"><span class="legend-color" style="background:#fbb6ce;"></span> Additions</div>
-      <div class="legend-item"><span class="legend-color" style="background:#a3f7bf;"></span> Omissions</div>
-      <div class="legend-item"><span class="legend-color" style="background:#f28b82;"></span> Substitutions</div>
-      <div class="legend-item"><span class="legend-color" style="background:#fdecc8;"></span> Spelling Mistakes</div>
-      <div class="legend-item"><span class="legend-color" style="background:#cce3ff;"></span> Capitalization Mistakes</div>
-      <div class="legend-item"><span class="legend-color" style="background:#d9c9f2;"></span> Punctuation Mistakes</div>
-    </div>
-
-    <div id="result"></div>
+    <button onclick="loadTranscript()">📄 Load Transcript & Transcribe</button>
   </div>
 
+  <div id="typing-section" style="display:none;">
+    <textarea id="typingBox" placeholder="Start typing here..." onfocus="startTimer()"></textarea>
+    <button onclick="submitTranscription()">✅ Submit</button>
+  </div>
+
+  <div id="result-container"></div>
+
 <script>
-  const subfiles = {
-    "Subfile 1": `This is the original text for Subfile 1. It contains a sample passage.`,
-    "Subfile 2": `Another original passage belongs to Subfile 2. Test your typing here.`,
-    "Subfile 3": `Subfile 3 contains this short original text to check transcription.`,
-    "Subfile 4": `You can add as many subfiles as you want, just add them here.`,
+  const firebaseConfig = {
+    apiKey: "AIzaSyDPkUWIrsibI-hzKJ8ljhvawdJ9Nq4-cpE",
+    authDomain: "checkmysteno.firebaseapp.com",
+    projectId: "checkmysteno",
+    storageBucket: "checkmysteno.appspot.com",
+    messagingSenderId: "719325115943",
+    appId: "1:719325115943:web:0dd50a67978816d42a8002"
   };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-  const subfileGrid = document.getElementById("subfileGrid");
-  const typingSection = document.getElementById("typingSection");
-  const typedTextarea = document.getElementById("typed");
-  const checkPunctuationCheckbox = document.getElementById("checkPunctuation");
-  const resultDiv = document.getElementById("result");
-  const backBtn = document.getElementById("backBtn");
-  const submitBtn = document.getElementById("submitBtn");
+  let player, originalText = "", timer = null, timeLeft = 0;
 
-  let currentOriginalText = "";
-
-  function renderSubfileGrid() {
-    subfileGrid.innerHTML = "";
-    for (const [name, text] of Object.entries(subfiles)) {
-      const card = document.createElement("div");
-      card.className = "subfileCard";
-      card.textContent = name;
-      card.title = "Click to select " + name;
-      card.onclick = () => selectSubfile(name);
-      subfileGrid.appendChild(card);
-    }
+  function extractVideoID(url) {
+    const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
   }
 
-  function selectSubfile(name) {
-    currentOriginalText = subfiles[name];
-    subfileGrid.style.display = "none";
-    typingSection.style.display = "block";
-    typedTextarea.value = "";
-    resultDiv.innerHTML = "";
-    checkPunctuationCheckbox.checked = false;
-    typedTextarea.focus();
-  }
+  function onYouTubeIframeAPIReady() {}
 
-  backBtn.onclick = () => {
-    typingSection.style.display = "none";
-    subfileGrid.style.display = "grid";
-    currentOriginalText = "";
-    typedTextarea.value = "";
-    resultDiv.innerHTML = "";
-  };
+  function loadVideo() {
+    const url = document.getElementById('ytlink').value.trim();
+    const videoId = extractVideoID(url);
+    if (!videoId) return alert("Invalid YouTube URL");
 
-  function highlightWord(word, className, tooltip) {
-    return `<span class="highlight ${className}" title="${tooltip}">${word}</span>`;
-  }
-
-  // Separate word and trailing punctuation (if punctuation checking enabled)
-  function separateWordAndPunctuation(word) {
-    const match = word.match(/^([a-zA-Z0-9'-]+)([.,!?;:'"-]*)$/);
-    if (match) {
-      return [match[1], match[2]];
-    }
-    return [word, ''];
-  }
-
-  function levenshtein(a, b) {
-    const matrix = Array(b.length + 1).fill(null).map(() =>
-      Array(a.length + 1).fill(null));
-    for (let i = 0; i <= a.length; i++) matrix[0][i] = i;
-    for (let j = 0; j <= b.length; j++) matrix[j][0] = j;
-    for (let j = 1; j <= b.length; j++) {
-      for (let i = 1; i <= a.length; i++) {
-        const indicator = a[i - 1] === b[j - 1] ? 0 : 1;
-        matrix[j][i] = Math.min(
-          matrix[j][i - 1] + 1,
-          matrix[j - 1][i] + 1,
-          matrix[j - 1][i - 1] + indicator
-        );
-      }
-    }
-    return matrix[b.length][a.length];
-  }
-
-  function isSpellingMistake(original, typed) {
-    const distance = levenshtein(original.toLowerCase(), typed.toLowerCase());
-    // Allow small edit distance for spelling mistakes
-    return distance > 0 && distance <= 2;
-  }
-
-  function checkTranscription(originalText, typedText, includePunctuation) {
-    // Normalize spaces and line breaks
-    const normalize = (str) => str.trim().replace(/\s+/g, ' ');
-
-    originalText = normalize(originalText);
-    typedText = normalize(typedText);
-
-    // Split words (including punctuation if checking)
-    let originalWords = originalText.split(' ');
-    let typedWords = typedText.split(' ');
-
-    // If not including punctuation, strip trailing punctuation for comparison
-    if (!includePunctuation) {
-      originalWords = originalWords.map(w => separateWordAndPunctuation(w)[0]);
-      typedWords = typedWords.map(w => separateWordAndPunctuation(w)[0]);
-    }
-
-    // Use a simple greedy alignment and diff algorithm
-    // To handle omissions, substitutions, additions properly
-    // We will iterate with two pointers through original and typed words
-
-    let i = 0; // pointer for originalWords
-    let j = 0; // pointer for typedWords
-    let output = "";
-    let fullMistakes = 0; // full mistakes = omissions + substitutions + additions
-    let halfMistakes = 0; // half mistakes = punctuation + spelling + capitalization
-    let totalWords = originalWords.length;
-
-    while (i < originalWords.length || j < typedWords.length) {
-      const origWordRaw = i < originalWords.length ? originalWords[i] : null;
-      const typedWordRaw = j < typedWords.length ? typedWords[j] : null;
-
-      if (origWordRaw === null) {
-        // typed has extra words
-        output += highlightWord(typedWordRaw, "extra", "Extra word (addition)") + " ";
-        fullMistakes++;
-        j++;
-        continue;
-      }
-
-      if (typedWordRaw === null) {
-        // typed missed word (omission)
-        output += highlightWord(origWordRaw, "omission", "Omission (missing word)") + " ";
-        fullMistakes++;
-        i++;
-        continue;
-      }
-
-      const [origWord, origPunc] = includePunctuation ? separateWordAndPunctuation(origWordRaw) : [origWordRaw, ""];
-      const [typedWord, typedPunc] = includePunctuation ? separateWordAndPunctuation(typedWordRaw) : [typedWordRaw, ""];
-
-      if (origWord.toLowerCase() === typedWord.toLowerCase()) {
-        // Check punctuation if included
-        if (includePunctuation && origPunc !== typedPunc) {
-          output += highlightWord(typedWord + typedPunc, "punctuation", `Punctuation mistake: expected '${origPunc || 'none'}'`) + " ";
-          halfMistakes++;
-        } else if (typedWord !== origWord) {
-          // capitalization mistake
-          output += highlightWord(typedWord, "capitalization", "Capitalization mistake") + " ";
-          halfMistakes++;
-        } else {
-          // correct word
-          output += typedWordRaw + " ";
+    if (!player) {
+      player = new YT.Player('player', {
+        height: '360',
+        width: '640',
+        videoId,
+        events: {
+          onReady: () => {},
+          onStateChange: onPlayerStateChange
         }
-        i++;
-        j++;
+      });
+    } else {
+      player.loadVideoById(videoId);
+    }
+  }
+
+  function onPlayerStateChange(event) {
+    if (event.data === YT.PlayerState.PLAYING) {
+      const wpm = document.getElementById('speed').value;
+      player.setPlaybackRate(wpm === 'original' ? 1 : parseInt(wpm) / 90);
+    }
+  }
+
+  function loadTranscript() {
+    const vol = document.getElementById('volume').value;
+    const tran = document.getElementById('transcript').value;
+    if (!vol || !tran) return alert("Please select Volume and Transcript.");
+
+    db.collection("volumes").doc(`vol${vol}`).collection("transcripts").doc(`t${tran}`).get()
+      .then(doc => {
+        if (doc.exists) {
+          originalText = doc.data().text;
+
+          // Show typing box only
+          document.getElementById('typing-section').style.display = 'block';
+          document.getElementById('typingBox').value = '';
+          document.getElementById('typingBox').focus();
+
+          // Hide all other sections
+          document.getElementById('player-container').style.display = 'none';
+          document.getElementById('transcribe-options').style.display = 'none';
+          document.getElementById('result-container').innerHTML = '';
+
+          resetTimer();
+        } else {
+          alert("Transcript not found.");
+        }
+      })
+      .catch(err => alert("Error fetching data: " + err));
+  }
+
+  function startTimer() {
+    if (timer) return;
+    const selected = parseInt(document.getElementById('timer-select').value) || 50;
+    timeLeft = selected * 60;
+    timer = setInterval(() => {
+      const min = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+      const sec = (timeLeft % 60).toString().padStart(2, '0');
+      document.getElementById('timerDisplay').innerText = `Remaining Time: ${min}:${sec}`;
+      if (--timeLeft < 0) {
+        clearInterval(timer);
+        timer = null;
+        alert("Time is up! Submitting your transcription.");
+        submitTranscription();
+      }
+    }, 1000);
+  }
+
+  function resetTimer() {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+    document.getElementById('timerDisplay').innerText = "Remaining Time: --:--";
+  }
+
+ function submitTranscription() {
+  resetTimer();
+  if (!originalText) return alert("Please load a transcript first.");
+  const typed = document.getElementById('typingBox').value.trim();
+  const checkPunct = document.getElementById("checkPunctuation")?.checked ?? false;
+
+  // --- Number phrase to digit converter ---
+  function wordsToNumber(text) {
+    const small = {
+      zero:0, one:1, two:2, three:3, four:4, five:5, six:6, seven:7, eight:8, nine:9,
+      ten:10, eleven:11, twelve:12, thirteen:13, fourteen:14, fifteen:15,
+      sixteen:16, seventeen:17, eighteen:18, nineteen:19
+    };
+    const tens = {
+      twenty:20, thirty:30, forty:40, fifty:50, sixty:60,
+      seventy:70, eighty:80, ninety:90
+    };
+    const scales = {
+      hundred:100,
+      thousand:1000,
+      lakh:100000,
+      million:1000000,
+      crore:10000000,
+      billion:1000000000
+    };
+
+    let current = 0;
+    let total = 0;
+    let words = text.toLowerCase().split(/[\s-]+/);
+
+    for (let i = 0; i < words.length; i++) {
+      let w = words[i].replace(/[,.]/g, '');
+
+      if (small.hasOwnProperty(w)) {
+        current += small[w];
+      } else if (tens.hasOwnProperty(w)) {
+        current += tens[w];
+      } else if (scales.hasOwnProperty(w)) {
+        if (current === 0) current = 1;
+        current *= scales[w];
+        total += current;
+        current = 0;
       } else {
-        // Words differ, check if it's a spelling mistake or substitution or omission+substitution
-
-        // If typed word is similar spelling to original word
-        if (isSpellingMistake(origWord, typedWord)) {
-          output += highlightWord(typedWordRaw, "spelling", "Spelling mistake") + " ";
-          halfMistakes++;
-          i++;
-          j++;
-        } else {
-          // Try look aheads to detect omission or addition
-
-          // Check next typed word for a match (possible omission)
-          if (j + 1 < typedWords.length && origWord.toLowerCase() === typedWords[j + 1].toLowerCase()) {
-            // Omission of typedWordRaw (typed word is extra)
-            output += highlightWord(typedWordRaw, "extra", "Extra word (addition)") + " ";
-            fullMistakes++;
-            j++;
-          }
-          // Check next original word for a match (possible addition)
-          else if (i + 1 < originalWords.length && typedWord.toLowerCase() === originalWords[i + 1].toLowerCase()) {
-            // Omission of origWord (typed word missing original word)
-            output += highlightWord(origWordRaw, "omission", "Omission (missing word)") + " ";
-            fullMistakes++;
-            i++;
-          } else {
-            // Substitution
-            output += highlightWord(typedWordRaw, "substitution", `Substitution mistake (expected '${origWordRaw}')`) + " ";
-            fullMistakes++;
-            i++;
-            j++;
-          }
-        }
+        total += current;
+        current = 0;
       }
     }
-
-    // Calculate accuracy
-    const typedWordCount = typedWords.length;
-    const totalMistakes = fullMistakes + 0.5 * halfMistakes;
-    const accuracy = Math.max(0, ((totalWords - totalMistakes) / totalWords) * 100).toFixed(2);
-
-    // Construct summary
-    
-    let summary = `Original words: ${totalWords}\n`;
-    summary += `Typed words: ${typedWordCount}\n`;
-    summary += `Full mistakes (additions, omissions, substitutions): ${fullMistakes}\n`;
-    summary += `Half mistakes (punctuation, spelling, capitalization): ${halfMistakes}\n`;
-    summary += `Total mistakes (weighted): ${totalMistakes.toFixed(1)}\n`;
-    summary += `Accuracy: ${accuracy}%\n\n`;
-
-    return summary + output.trim();
+    total += current;
+    return total > 0 ? total.toString() : text;
   }
 
-  submitBtn.onclick = () => {
-    if (!currentOriginalText) return;
-    const typedText = typedTextarea.value.trim();
-    if (!typedText) {
-      alert("Please type your transcription before submitting.");
-      return;
+  // --- Preprocess text: convert number phrases to digits ---
+  function preprocessText(text) {
+    let words = text.trim().split(/\s+/);
+    let resultWords = [];
+    let numberPhrase = [];
+    const allNumberWords = new Set([
+      "zero","one","two","three","four","five","six","seven","eight","nine",
+      "ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen",
+      "eighteen","nineteen","twenty","thirty","forty","fifty","sixty","seventy",
+      "eighty","ninety","hundred","thousand","lakh","million","crore","billion"
+    ]);
+
+    function flushNumberPhrase() {
+      if (numberPhrase.length === 0) return;
+      let phrase = numberPhrase.join(" ");
+      let converted = wordsToNumber(phrase);
+      if (/^\d+$/.test(converted)) {
+        resultWords.push(converted);
+      } else {
+        resultWords.push(...numberPhrase);
+      }
+      numberPhrase = [];
     }
-    const includePunctuation = checkPunctuationCheckbox.checked;
-    const checked = checkTranscription(currentOriginalText, typedText, includePunctuation);
-    resultDiv.innerHTML = checked;
-  };
 
-  // Initialize grid on page load
-  renderSubfileGrid();
+    for (let w of words) {
+      let cleanW = w.toLowerCase().replace(/[.,]/g,'');
+      if (allNumberWords.has(cleanW)) {
+        numberPhrase.push(cleanW);
+      } else {
+        flushNumberPhrase();
+        resultWords.push(w);
+      }
+    }
+    flushNumberPhrase();
+
+    return resultWords.join(" ");
+  }
+
+  // --- Normalize percent words and symbols ---
+  function normalizePercent(text) {
+    // Replace variations like "percent", "per cent", "%", "per-cent" with "percent"
+    return text.replace(/\bper\s*cent\b/gi, "percent")
+               .replace(/%/g, "percent")
+               .replace(/\bper-cent\b/gi, "percent");
+  }
+
+  // Preprocess and normalize original and typed text before splitting
+  const originalProcessed = preprocessText(originalText);
+  const typedProcessed = preprocessText(typed);
+
+  const originalNormalizedPercent = normalizePercent(originalProcessed);
+  const typedNormalizedPercent = normalizePercent(typedProcessed);
+
+  const originalWords = originalNormalizedPercent.split(/\s+/);
+  const typedWords = typedNormalizedPercent ? typedNormalizedPercent.split(/\s+/) : [];
+
+  if (typedWords.length === 0) {
+    // Typed empty => all omissions
+    let fullMistakes = originalWords.length;
+    let halfMistakes = 0;
+    let html = "<p>";
+    for (const w of originalWords) {
+      html += `<span class='highlight omission'>${w}</span> `;
+    }
+    html += "</p>";
+
+    const totalWords = originalWords.length;
+    const mistakeScore = fullMistakes + halfMistakes * 0.5;
+    const accuracy = (((totalWords - mistakeScore) / totalWords) * 100).toFixed(2);
+
+    document.getElementById("result-container").innerHTML = `
+      <h2>📊 Result Sheet</h2>
+      <div>Total Words: ${totalWords}</div>
+      <div>Full Mistakes: ${fullMistakes}</div>
+      <div>Half Mistakes: ${halfMistakes}</div>
+      <div>Mistake %: ${(mistakeScore / totalWords * 100).toFixed(2)}%</div>
+      <div>Accuracy: ${accuracy}%</div>
+      ${html}
+    `;
+    return;
+  }
+
+  // DP arrays for edit distance
+  const dp = Array.from({ length: originalWords.length + 1 }, () => Array(typedWords.length + 1).fill(0));
+  const trace = Array.from({ length: originalWords.length + 1 }, () => Array(typedWords.length + 1).fill(""));
+
+  for (let i = 0; i <= originalWords.length; i++) dp[i][0] = i;
+  for (let j = 0; j <= typedWords.length; j++) dp[0][j] = j;
+
+  for (let i = 1; i <= originalWords.length; i++) {
+    for (let j = 1; j <= typedWords.length; j++) {
+      if (originalWords[i - 1] === typedWords[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1];
+        trace[i][j] = "match";
+      } else {
+        const subCost = dp[i - 1][j - 1] + 2;
+        const insCost = dp[i][j - 1] + 1;
+        const delCost = dp[i - 1][j] + 1;
+        const min = Math.min(subCost, insCost, delCost);
+        dp[i][j] = min;
+        trace[i][j] = min === subCost ? "sub" : min === insCost ? "ins" : "del";
+      }
+    }
+  }
+
+  let i = originalWords.length, j = typedWords.length;
+  const alignment = [];
+
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && trace[i][j] === "match") {
+      alignment.unshift({ type: "match", o: originalWords[i - 1], t: typedWords[j - 1] });
+      i--; j--;
+    } else if (i > 0 && j > 0 && trace[i][j] === "sub") {
+      alignment.unshift({ type: "sub", o: originalWords[i - 1], t: typedWords[j - 1] });
+      i--; j--;
+    } else if (j > 0 && trace[i][j] === "ins") {
+      alignment.unshift({ type: "ins", t: typedWords[j - 1] });
+      j--;
+    } else if (i > 0 && trace[i][j] === "del") {
+      alignment.unshift({ type: "del", o: originalWords[i - 1] });
+      i--;
+    } else {
+      if (i > 0) {
+        alignment.unshift({ type: "del", o: originalWords[i - 1] });
+        i--;
+      } else if (j > 0) {
+        alignment.unshift({ type: "ins", t: typedWords[j - 1] });
+        j--;
+      } else {
+        break;
+      }
+    }
+  }
+
+  // Levenshtein distance for spelling check
+  function levenshtein(a, b) {
+    const dp = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
+    for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+    for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+      }
+    }
+    return dp[a.length][b.length];
+  }
+
+  // Number match check using normalized numbers
+  function normalizeNumberWord(word) {
+    const smallNumbers = {
+      zero:0, one:1, two:2, three:3, four:4, five:5, six:6, seven:7, eight:8, nine:9,
+      ten:10, eleven:11, twelve:12, thirteen:13, fourteen:14, fifteen:15, sixteen:16, seventeen:17,
+      eighteen:18, nineteen:19,
+    };
+    const tens = {
+      twenty:20, thirty:30, forty:40, fifty:50, sixty:60, seventy:70, eighty:80, ninety:90
+    };
+    const scales = {
+      hundred:100,
+      thousand:1000,
+      lakh:100000,
+      million:1000000,
+      crore:10000000,
+      billion:1000000000
+    };
+
+    word = word.toLowerCase().replace(/[,]/g, '');
+
+    if (!isNaN(word)) return Number(word);
+
+    if (/^\d+$/.test(word)) return Number(word);
+
+    if (smallNumbers[word] !== undefined) return smallNumbers[word];
+    if (tens[word] !== undefined) return tens[word];
+    if (scales[word] !== undefined) return scales[word];
+
+    return word;
+  }
+  function isNumberMatch(origWord, typedWord) {
+    let n1 = normalizeNumberWord(origWord);
+    let n2 = normalizeNumberWord(typedWord);
+
+    if (typeof n1 === "number" && typeof n2 === "number") {
+      return n1 === n2;
+    }
+    return false;
+  }
+  function hasComma(s) { return /,/.test(s); }
+  function hasPunct(s) { return /[.?!]/.test(s); }
+
+  let fullMistakes = 0, halfMistakes = 0, html = "<p>";
+
+  for (const entry of alignment) {
+    if (entry.type === "match") {
+      html += `${entry.t} `;
+    } else if (entry.type === "del") {
+      html += `<span class='highlight omission'>${entry.o}</span> `;
+      fullMistakes++;
+    } else if (entry.type === "ins") {
+      html += `<span class='highlight extra'>${entry.t}</span> `;
+      fullMistakes++;
+    } else if (entry.type === "sub") {
+      const clean = str => str.replace(/[.,!?;:'"]+$/, '');
+      const o = clean(entry.o);
+      const t = clean(entry.t);
+      const ol = o.toLowerCase(), tl = t.toLowerCase();
+
+      if (isNumberMatch(ol, tl)) {
+        html += `✅ Numbers match! `;
+      } else if (!checkPunct && o === t) {
+        html += `${entry.t} `;
+      } else if (checkPunct && (hasComma(entry.o) !== hasComma(entry.t) || hasPunct(entry.o) !== hasPunct(entry.t))) {
+        html += `<span class='highlight punctuation'>${entry.t}</span> `;
+        halfMistakes++;
+      } else if (ol === tl && entry.o !== entry.t) {
+        html += `<span class='highlight capitalization'>${entry.t}</span> `;
+        halfMistakes++;
+      } else if (levenshtein(o, t) <= 2) {
+        html += `<span class='highlight spelling'>${entry.o} (<b>${entry.t}</b>)</span> `;
+        halfMistakes++;
+      } else {
+        html += `<span class='highlight substitution'>${entry.t}</span> <span class='highlight omission'>(${entry.o})</span> `;
+        fullMistakes += 2;
+      }
+    }
+  }
+
+  html += "</p>";
+  const totalWords = originalWords.length;
+  const mistakeScore = fullMistakes + halfMistakes * 0.5;
+  const accuracy = (((totalWords - mistakeScore) / totalWords) * 100).toFixed(2);
+
+  document.getElementById("result-container").innerHTML = `
+    <h2>📊 Result Sheet</h2>
+    <div>Total Words: ${totalWords}</div>
+    <div>Full Mistakes: ${fullMistakes}</div>
+    <div>Half Mistakes: ${halfMistakes}</div>
+    <div>Mistake %: ${(mistakeScore / totalWords * 100).toFixed(2)}%</div>
+    <div>Accuracy: ${accuracy}%</div>
+    ${html}
+  `;
+}
 </script>
-
 </body>
 </html>
+
