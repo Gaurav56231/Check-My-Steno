@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Check My Steno – Your SSC Practice Companion</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #6366f1;
+      --accent: #ec4899;
+      --gray: #f9fafb;
+      --text: #1f2937;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: white;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid #e5e7eb;
+      background: #fff;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .hero {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4rem 2rem;
+      background: linear-gradient(to right, #eef2ff, #ffffff);
+    }
+
+    .hero-text {
+      flex: 1;
+      min-width: 300px;
+      max-width: 600px;
+    }
+
+    .hero-text h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-text p {
+      font-size: 1rem;
+      color: #374151;
+      margin: 1rem 0;
+    }
+
+    .hero-text .highlight {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .hero-button {
+      background: var(--primary);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-top: 1.5rem;
+      cursor: pointer;
+    }
+
+    .hero-button:hover {
+      background: #4f46e5;
+    }
+
+    .hero-image {
+      flex: 1;
+      min-width: 300px;
+      text-align: center;
+    }
+
+    .hero-image img {
+      max-width: 90%;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .section {
+      padding: 4rem 2rem;
+      background: var(--gray);
+      text-align: center;
+    }
+
+    .section h2 {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      color: var(--text);
+    }
+
+    .features,
+    .how-it-works {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 2rem;
+      max-width: 1000px;
+      margin: auto;
+      text-align: left;
+    }
+
+    .feature-box,
+    .step-box {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .feature-box strong,
+    .step-box strong {
+      font-size: 1.1rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .meta {
+      padding: 2rem;
+      font-style: italic;
+      font-size: 0.95rem;
+      color: #6b7280;
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+    }
+
+    .about {
+      padding: 3rem 2rem;
+      max-width: 900px;
+      margin: auto;
+      text-align: center;
+    }
+
+    .about h3 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .about p {
+      color: #4b5563;
+      margin-bottom: 1rem;
+    }
+
+    .cta-banner {
+      background: linear-gradient(to right, #6366f1, #8b5cf6);
+      color: white;
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+
+    .cta-banner h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .cta-banner button {
+      background: white;
+      color: #4f46e5;
+      font-weight: 600;
+      padding: 0.8rem 1.8rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .cta-banner button:hover {
+      background: #e0e7ff;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.9rem;
+      color: #9ca3af;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    @media (max-width: 768px) {
+      .hero {
+        flex-direction: column;
+      }
+      .hero-text {
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">Check My Steno</div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-text">
+      <h1>Introducing Your Steno™</h1>
+      <p><strong>Your Steno</strong> is our exclusive smart dictation feature inside <strong>Check My Steno</strong>, the all-in-one SSC steno platform.</p>
+      <p class="highlight">Paste. Play. Practice. Perfect.</p>
+      <p>🎧 The only tool that lets you paste any YouTube dictation link, control speed from 60–160 WPM, and get real-time error feedback as you type.</p>
+      <p class="highlight">🎯 Your Link. Your Speed. Your Accuracy.</p>
+      <button class="hero-button" onclick="parent.loadTool('practice-kc.html')">🚀 Start Practicing Now</button>
+    </div>
+    <div class="hero-image">
+      <img src="https://placehold.co/500x300?text=Your+Steno+Preview" alt="Your Steno Preview">
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section">
+    <h2>What Makes Your Steno™ Different?</h2>
+    <div class="features">
+      <div class="feature-box">
+        <strong>⚡ Real-Time Feedback</strong>
+        <p>Unlike traditional dictation apps, Your Steno highlights mistakes immediately so you can correct on the go — just like in a real test.</p>
+      </div>
+      <div class="feature-box">
+        <strong>🎚 Speed Control from 60–160 WPM</strong>
+        <p>Choose your speed and train progressively. Master dictations from beginner to topper level — all on your terms.</p>
+      </div>
+      <div class="feature-box">
+        <strong>📺 YouTube Dictation Engine</strong>
+        <p>Paste any YouTube dictation video. Whether it's SSC, High Court, or Hindi-English material — Your Steno adapts to your content.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="section" style="background:#fff;">
+    <h2>How It Works</h2>
+    <div class="how-it-works">
+      <div class="step-box"><strong>1. Paste a YouTube Link</strong><p>Use any public dictation video link — English or Hindi.</p></div>
+      <div class="step-box"><strong>2. Set Your Speed</strong><p>Use the slider to choose WPM: 60, 80, 100… up to 160.</p></div>
+      <div class="step-box"><strong>3. Transcribe Live</strong><p>Watch the video play while you type. Errors are highlighted instantly.</p></div>
+      <div class="step-box"><strong>4. Analyze Your Accuracy</strong><p>View mistakes, get your word count, and track improvements.</p></div>
+    </div>
+  </section>
+
+  <!-- Meta Description -->
+  <section class="meta">
+    ✅ <strong>DictaFlex™</strong> – The only SSC Steno dictation tool that lets you transcribe any YouTube video at any speed with smart error detection. Practice real-time, improve faster, and master dictation like never before.
+  </section>
+
+  <!-- About -->
+  <section class="about">
+    <h3>About Check My Steno</h3>
+    <p><strong>Check My Steno</strong> is a full practice system built for SSC Steno aspirants. It's more than just typing tests — it's your personal lab for speed, accuracy, and confidence.</p>
+    <p>📌 Use our <strong>Transcription Checker</strong> to upload and auto-check dictations.<br/>
+       📊 Get test-wise insights with <strong>Test Analysis</strong>.<br/>
+       🎯 And practice live using <strong>Your Steno™</strong> — our exclusive YouTube-based dictation trainer.</p>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="cta-banner">
+    <h2>Train like a topper with Your Steno™</h2>
+    <button onclick="parent.loadTool('practice-kc.html')">Start Now</button>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    © 2025 Check My Steno. Built with precision. Powered by Your Steno™.
+  </footer>
+
+</body>
+</html>
