@@ -2,305 +2,126 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Check My Steno</title>
-
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-
-  <!-- Font Awesome Icons -->
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js">
+    function startSessionTimer() {
+      const SESSION_TIMEOUT = 60 * 1000; // 1 minute
+      setTimeout(() => {
+        alert("Session expired. Please re-enter your access code.");
+        localStorage.removeItem("checkMyStenoUser");
+        location.reload();
+      }, SESSION_TIMEOUT);
+    }
+</script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js">
+    function startSessionTimer() {
+      const SESSION_TIMEOUT = 60 * 1000; // 1 minute
+      setTimeout(() => {
+        alert("Session expired. Please re-enter your access code.");
+        localStorage.removeItem("checkMyStenoUser");
+        location.reload();
+      }, SESSION_TIMEOUT);
+    }
+</script>
   <style>
-    /* All original styles from indexnew.html */
-    :root {
-      --primary-color: #0d9488;
-      --hover-color: #0f766e;
-      --background: #f9f9f9;
-      --white: #ffffff;
-      --text-color: #333;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body, html {
       font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
       height: 100%;
-      background-color: var(--background);
+      background-color: #f0f4f8;
     }
-
-    #loginContainer {
+    .main-container {
       display: flex;
-      justify-content: center;
-      align-items: center;
       height: 100vh;
-      background: var(--background);
-      position: fixed;
-      width: 100%;
-      top: 0;
-      left: 0;
-      z-index: 10;
     }
-
-    .login-box {
-      background: var(--white);
-      padding: 40px;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      max-width: 400px;
-      text-align: center;
-      position: relative;
-      z-index: 2;
-    }
-
-    .login-box h2 {
-      margin-bottom: 20px;
-      color: var(--primary-color);
-    }
-
-    .login-box input {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
-
-    .login-box button {
-      width: 100%;
-      padding: 14px;
-      background-color: var(--primary-color);
-      color: var(--white);
-      border: none;
-      border-radius: 8px;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: background-color 0.3s ease;
-    }
-
-    .login-box button:hover {
-      background-color: var(--hover-color);
-    }
-
-    .alt-option {
-      margin-top: 15px;
-      font-size: 14px;
-      color: var(--text-color);
-    }
-
-    .alt-option a {
-      color: var(--primary-color);
-      text-decoration: underline;
-      cursor: pointer;
-    }
-
-    #mainContainer {
-      display: none;
-      height: 100vh;
-      width: 100vw;
-      overflow: hidden;
-      position: relative;
-      flex-direction: row;
-    }
-
     .sidebar {
-      width: 260px;
-      background: var(--primary-color);
-      color: var(--white);
+      width: 220px;
+      background-color: #1f2937;
+      color: white;
+      padding: 1rem;
       display: flex;
       flex-direction: column;
-      padding: 30px 20px;
-      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+      gap: 1rem;
+      transition: transform 0.3s ease;
     }
-
-    .logo {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 30px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .logo i {
-      font-size: 26px;
-    }
-
     .sidebar a {
-      font-size: 17px;
-      padding: 14px 15px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      background-color: transparent;
-      color: var(--white);
+      color: white;
       text-decoration: none;
-      transition: background-color 0.3s, transform 0.2s;
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      font-weight: bold;
       cursor: pointer;
-      user-select: none;
     }
-
     .sidebar a:hover {
-      background-color: var(--hover-color);
-      transform: translateX(5px);
+      text-decoration: underline;
     }
-
+    .header {
+      background-color: #4f46e5;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
     .content {
       flex: 1;
-      padding: 20px;
-      background-color: var(--white);
-      border-radius: 0 10px 10px 0;
-      display: flex;
-      flex-direction: column;
       position: relative;
+      background: #ffffff;
     }
-
-    .default-message {
-      text-align: center;
-      font-size: 1.5rem;
-      color: #666;
-      margin-top: 30vh;
-      opacity: 0;
-      animation: fadeIn 1s ease-in-out forwards;
-    }
-
-    @keyframes fadeIn {
-      to { opacity: 1; }
-    }
-
-    iframe {
-      flex: 1;
-      border: none;
+    #toolFrame {
       width: 100%;
-      border-radius: 8px;
-      margin-top: 10px;
-      display: none;
-      animation: fadeIn 0.8s ease-in-out forwards;
-    }
-
-    #subscribeOverlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background-color: rgba(13, 148, 136, 0.95);
-      color: white;
-      font-family: 'Inter', sans-serif;
-      font-size: 1.2rem;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      padding: 30px;
-      text-align: center;
-    }
-
-    #subscribeOverlay.active {
-      display: flex;
-    }
-
-    #subscribeOverlay h1 {
-      font-size: 3rem;
-      margin-bottom: 20px;
-    }
-
-    #subscribeOverlay p {
-      font-size: 1.5rem;
-      margin-bottom: 30px;
-      line-height: 1.4;
-    }
-
-    #subscribeOverlay button {
-      font-size: 1.2rem;
-      padding: 15px 30px;
+      height: 100%;
       border: none;
-      border-radius: 8px;
-      background-color: var(--white);
-      color: var(--primary-color);
-      cursor: pointer;
-      margin-bottom: 20px;
-      transition: background-color 0.3s ease;
+      display: none;
     }
-
-    #subscribeOverlay button:hover {
-      background-color: #d4f1ef;
+    #defaultMessage {
+      padding: 2rem;
+      text-align: center;
+      font-size: 1.2rem;
+      color: #6b7280;
     }
-
-    #subscribeOverlay .close-btn {
+    #toggleSidebarBtn {
       position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 2rem;
-      background: transparent;
-      color: var(--white);
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+      padding: 6px 12px;
+      font-size: 16px;
+      background-color: #0d9488;
+      color: white;
       border: none;
+      border-radius: 6px;
       cursor: pointer;
-    }
-
-    #greeting {
-      font-size: 2rem;
-      font-weight: bold;
-      text-align: center;
-      margin: 30px 0;
-      color: var(--primary-color);
+      display: none;
     }
   </style>
 </head>
 <body>
-  <div id="loginContainer">
-    <div class="login-box">
-      <h2>Login to Continue</h2>
-      <input type="text" id="name" placeholder="Your Name" autocomplete="off" />
-      <input type="email" id="email" placeholder="Your Email" autocomplete="off" />
-      <input type="text" id="accessCode" placeholder="Access Code" autocomplete="off" />
-      <button onclick="login()">Login</button>
-      <div class="alt-option">
-        Don't have a code? <a onclick="showSubscribe()">Subscribe</a>
-      </div>
-    </div>
+  <div class="header">Check My Steno Dashboard</div>
+  <div id="loginContainer" style="padding: 2rem; text-align: center;">
+    <h2>Access Check My Steno</h2>
+    <input type="text" id="accessCode" placeholder="Enter Access Code" /><br /><br />
+    <button onclick="validateAccessCode()">Enter</button>
+    <p id="loginError" style="color: red;"></p>
   </div>
-
-  <div id="subscribeOverlay">
-    <button class="close-btn" onclick="hideSubscribe()">&times;</button>
-    <h1>Subscribe Now</h1>
-    <p>To subscribe, please transfer <strong>₹100</strong> to the following UPI ID:<br /><strong>8470003027</strong></p>
-    <button onclick="iPaid()">I Paid</button>
-  </div>
-
-  <div class="main-container" id="mainContainer" style="display: none; flex;">
-    <div class="sidebar">
-      <div class="logo"><i class="fas fa-keyboard"></i>Check My Steno</div>
-      <a onclick="loadTool('home.html')"><i class="fas fa-house"></i> Home</a>
-      <a onclick="loadTool('transcription-checker.html')"><i class="fas fa-pen"></i> Trans Check</a>
-      <a onclick="loadTool('test-analysis.html')"><i class="fas fa-chart-bar"></i> Test Analysis</a>
-      <a onclick="loadTool('practice-kc.html')"><i class="fas fa-book"></i> Practice KC</a>
-      <a onclick="showSubscribe()"><i class="fas fa-money-check"></i> Subscription</a>
-      <a onclick="loadTool('about.html')"><i class="fas fa-circle-info"></i> About</a>
-      <a onclick="toggleSettings()"><i class="fas fa-gear"></i> Settings</a>
-      <button onclick="logout()" style="margin-top:auto; padding: 12px; background: #f87171; border: none; border-radius: 8px; color: white; cursor:pointer; font-weight:bold; font-size: 16px;">Logout</button>
+  <div class="main-container" id="mainContainer" style="display: none;">
+    <button id="toggleSidebarBtn">☰ Menu</button>
+    <div class="sidebar" id="sidebar">
+      <h2 id="greeting">Welcome!</h2>
+      <a onclick="loadTool('home.html')">🏠 Home</a>
+      <a onclick="loadTool('practice-kc.html')">📋 Practice KC</a>
+      <a onclick="loadTool('test-analysis.html')">📊 Test Analysis</a>
+      <a onclick="loadTool('transcription-checker.html')">✅ transcription checker</a>
+      <a onclick="logout()" style="color: #f87171;">🚪 Logout</a>
     </div>
     <div class="content">
-      <div id="greeting">Welcome!</div>
-      <div class="default-message" id="defaultMessage">Select an option from the sidebar to begin.</div>
+      <div id="defaultMessage">Select an option from the sidebar to begin.</div>
       <iframe id="toolFrame" src="" frameborder="0"></iframe>
     </div>
   </div>
-
   <script>
-    const firebaseConfig = {
+     const firebaseConfig = {
       apiKey: "AIzaSyDPkUWIrsibI-hzKJ8ljhvawdJ9Nq4-cpE",
       authDomain: "checkmysteno.firebaseapp.com",
       projectId: "checkmysteno",
@@ -308,101 +129,87 @@
       messagingSenderId: "719325115943",
       appId: "1:719325115943:web:0dd50a67978816d42a8002"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    let user = null;
-
-    async function login() {
-      const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const code = document.getElementById('accessCode').value.trim();
-
-      if (!name || !email || !code) {
-        alert('Please fill in all fields.');
-        return;
-      }
-
-      try {
-        const docRef = db.collection("accessCodes").doc(code);
-        const doc = await docRef.get();
-
-        if (doc.exists && doc.data().valid === true) {
-          user = { name, email, code };
-          localStorage.setItem('checkMyStenoUser', JSON.stringify(user));
-          showMainApp();
-        } else {
-          alert('Access code is invalid or expired.');
-        }
-      } catch (error) {
-        console.error('Error during login:', error);
-        alert('Login failed. Please try again.');
-      }
-    }
-
-    function showMainApp() {
-      document.getElementById('loginContainer').style.display = 'none';
-      document.getElementById('mainContainer').style.display = 'flex';
-      document.getElementById('greeting').textContent = `Welcome, ${user.name}!`;
-      resetMainUI();
+    function validateAccessCode() {
+      const code = document.getElementById("accessCode").value.trim();
+      db.collection("accessCodes").doc(code).get()
+        .then(doc => {
+          if (doc.exists) {
+  startSessionTimer(); // ✅ start timer
+            const userData = doc.data();
+            localStorage.setItem("checkMyStenoUser", JSON.stringify(userData));
+            document.getElementById("loginContainer").style.display = "none";
+            document.getElementById("mainContainer").style.display = "flex";
+            document.getElementById("greeting").textContent = `Welcome, ${userData.name || code}!`;
+            setTimeout(() => {
+              const greet = document.getElementById("greeting");
+              if (greet) greet.style.display = 'none';
+            }, 4000);
+          } else {
+            document.getElementById("loginError").textContent = "Invalid Access Code.";
+          }
+        })
+        .catch(error => {
+          document.getElementById("loginError").textContent = "Error: " + error.message;
+        });
     }
 
     function logout() {
-      if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('checkMyStenoUser');
-        user = null;
-        document.getElementById('mainContainer').style.display = 'none';
-        document.getElementById('loginContainer').style.display = 'flex';
-        clearLoginFields();
-      }
-    }
-
-    function clearLoginFields() {
-      document.getElementById('name').value = '';
-      document.getElementById('email').value = '';
-      document.getElementById('accessCode').value = '';
+      localStorage.removeItem("checkMyStenoUser");
+      location.reload();
     }
 
     function loadTool(page) {
-      const iframe = document.getElementById('toolFrame');
-      iframe.style.display = 'block';
+      const iframe = document.getElementById("toolFrame");
+      iframe.style.display = "block";
       iframe.src = page;
-      document.getElementById('defaultMessage').style.display = 'none';
+      document.getElementById("defaultMessage").style.display = "none";
+
+      const sidebar = document.getElementById("sidebar");
+      const toggleBtn = document.getElementById("toggleSidebarBtn");
+      if (sidebar) sidebar.style.display = "none";
+      if (toggleBtn) toggleBtn.style.display = "block";
     }
 
-    function resetMainUI() {
-      const iframe = document.getElementById('toolFrame');
-      iframe.style.display = 'none';
-      iframe.src = '';
-      document.getElementById('defaultMessage').style.display = 'block';
-    }
-
-    function showSubscribe() {
-      document.getElementById('subscribeOverlay').classList.add('active');
-    }
-
-    function hideSubscribe() {
-      document.getElementById('subscribeOverlay').classList.remove('active');
-    }
-
-    function iPaid() {
-      const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSep9q-qhIlWOFNIkwPUXfnJNnCzkzkACO2qA1sGXdIqVZj-nw/viewform?usp=header';
-      window.open(formUrl, '_blank');
-      alert('Thank you! Please submit the form to receive your access code.');
-      hideSubscribe();
-    }
-
-    function toggleSettings() {
-      alert('Settings feature coming soon!');
-    }
+    document.getElementById("toggleSidebarBtn").onclick = function () {
+      const sidebar = document.getElementById("sidebar");
+      const btn = document.getElementById("toggleSidebarBtn");
+      if (sidebar.style.display === "none") {
+        sidebar.style.display = "flex";
+        btn.textContent = "✖ Close";
+      } else {
+        sidebar.style.display = "none";
+        btn.textContent = "☰ Menu";
+      }
+    };
 
     window.onload = function () {
       const storedUser = localStorage.getItem('checkMyStenoUser');
       if (storedUser) {
-        user = JSON.parse(storedUser);
-        showMainApp();
+    startSessionTimer(); // ✅ start timer
+        const userData = JSON.parse(storedUser);
+        document.getElementById("loginContainer").style.display = "none";
+        document.getElementById("mainContainer").style.display = "flex";
+        document.getElementById("greeting").textContent = `Welcome, ${userData.name || 'User'}!`;
+        setTimeout(() => {
+          const greet = document.getElementById("greeting");
+          if (greet) greet.style.display = 'none';
+        }, 4000);
       }
     };
-  </script>
+  
+    function startSessionTimer() {
+      const SESSION_TIMEOUT = 2 * 60 * 1000; // 1 minute
+      setTimeout(() => {
+        alert("Session expired. Please re-enter your access code.");
+        localStorage.removeItem("checkMyStenoUser");
+        location.reload();
+      }, SESSION_TIMEOUT);
+    }
+</script>
 </body>
 </html>
+
