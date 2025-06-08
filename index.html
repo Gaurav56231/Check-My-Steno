@@ -5,96 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Check My Steno</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js">
-    function startSessionTimer() {
-      const SESSION_TIMEOUT = 60 * 1000; // 1 minute
-      setTimeout(() => {
-        alert("Session expired. Please re-enter your access code.");
-        localStorage.removeItem("checkMyStenoUser");
-        location.reload();
-      }, SESSION_TIMEOUT);
-    }
-</script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js">
-    function startSessionTimer() {
-      const SESSION_TIMEOUT = 60 * 1000; // 1 minute
-      setTimeout(() => {
-        alert("Session expired. Please re-enter your access code.");
-        localStorage.removeItem("checkMyStenoUser");
-        location.reload();
-      }, SESSION_TIMEOUT);
-    }
-</script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <style>
-    body, html {
-      font-family: 'Inter', sans-serif;
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background-color: #f0f4f8;
-    }
-    .main-container {
-      display: flex;
-      height: 100vh;
-    }
-    .sidebar {
-      width: 220px;
-      background-color: #1f2937;
-      color: white;
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      transition: transform 0.3s ease;
-    }
-    .sidebar a {
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .sidebar a:hover {
-      text-decoration: underline;
-    }
-    .header {
-      background-color: #4f46e5;
-      color: white;
-      padding: 1rem;
-      text-align: center;
-      font-weight: bold;
-      font-size: 1.2rem;
-    }
-    .content {
-      flex: 1;
-      position: relative;
-      background: #ffffff;
-    }
-    #toolFrame {
-      width: 100%;
-      height: 100%;
-      border: none;
-      display: none;
-    }
-    #defaultMessage {
-      padding: 2rem;
-      text-align: center;
-      font-size: 1.2rem;
-      color: #6b7280;
-    }
-    #toggleSidebarBtn {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 1000;
-      padding: 6px 12px;
-      font-size: 16px;
-      background-color: #0d9488;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      display: none;
-    }
+    body,html{font-family:'Inter',sans-serif;margin:0;padding:0;height:100%;background-color:#f0f4f8}.main-container{display:flex;height:100vh}.sidebar{width:220px;background-color:#1f2937;color:white;padding:1rem;display:flex;flex-direction:column;gap:1rem;transition:transform .3s ease}.sidebar a{color:white;text-decoration:none;font-weight:bold;cursor:pointer}.sidebar a:hover{text-decoration:underline}.header{background-color:#4f46e5;color:white;padding:1rem;text-align:center;font-weight:bold;font-size:1.2rem}.content{flex:1;position:relative;background:#fff}#toolFrame{width:100%;height:100%;border:none;display:none}#defaultMessage{padding:2rem;text-align:center;font-size:1.2rem;color:#6b7280}#toggleSidebarBtn{position:absolute;top:10px;left:10px;z-index:1000;padding:6px 12px;font-size:16px;background-color:#0d9488;color:white;border:none;border-radius:6px;cursor:pointer;display:none}
   </style>
 </head>
 <body>
@@ -121,95 +35,8 @@
     </div>
   </div>
   <script>
-     const firebaseConfig = {
-      apiKey: "AIzaSyDPkUWIrsibI-hzKJ8ljhvawdJ9Nq4-cpE",
-      authDomain: "checkmysteno.firebaseapp.com",
-      projectId: "checkmysteno",
-      storageBucket: "checkmysteno.firebasestorage.app",
-      messagingSenderId: "719325115943",
-      appId: "1:719325115943:web:0dd50a67978816d42a8002"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    function validateAccessCode() {
-      const code = document.getElementById("accessCode").value.trim();
-      db.collection("accessCodes").doc(code).get()
-        .then(doc => {
-          if (doc.exists) {
-  startSessionTimer(); // ✅ start timer
-            const userData = doc.data();
-            localStorage.setItem("checkMyStenoUser", JSON.stringify(userData));
-            document.getElementById("loginContainer").style.display = "none";
-            document.getElementById("mainContainer").style.display = "flex";
-            document.getElementById("greeting").textContent = `Welcome, ${userData.name || code}!`;
-            setTimeout(() => {
-              const greet = document.getElementById("greeting");
-              if (greet) greet.style.display = 'none';
-            }, 4000);
-          } else {
-            document.getElementById("loginError").textContent = "Invalid Access Code.";
-          }
-        })
-        .catch(error => {
-          document.getElementById("loginError").textContent = "Error: " + error.message;
-        });
-    }
-
-    function logout() {
-      localStorage.removeItem("checkMyStenoUser");
-      location.reload();
-    }
-
-    function loadTool(page) {
-      const iframe = document.getElementById("toolFrame");
-      iframe.style.display = "block";
-      iframe.src = page;
-      document.getElementById("defaultMessage").style.display = "none";
-
-      const sidebar = document.getElementById("sidebar");
-      const toggleBtn = document.getElementById("toggleSidebarBtn");
-      if (sidebar) sidebar.style.display = "none";
-      if (toggleBtn) toggleBtn.style.display = "block";
-    }
-
-    document.getElementById("toggleSidebarBtn").onclick = function () {
-      const sidebar = document.getElementById("sidebar");
-      const btn = document.getElementById("toggleSidebarBtn");
-      if (sidebar.style.display === "none") {
-        sidebar.style.display = "flex";
-        btn.textContent = "✖ Close";
-      } else {
-        sidebar.style.display = "none";
-        btn.textContent = "☰ Menu";
-      }
-    };
-
-    window.onload = function () {
-      const storedUser = localStorage.getItem('checkMyStenoUser');
-      if (storedUser) {
-    startSessionTimer(); // ✅ start timer
-        const userData = JSON.parse(storedUser);
-        document.getElementById("loginContainer").style.display = "none";
-        document.getElementById("mainContainer").style.display = "flex";
-        document.getElementById("greeting").textContent = `Welcome, ${userData.name || 'User'}!`;
-        setTimeout(() => {
-          const greet = document.getElementById("greeting");
-          if (greet) greet.style.display = 'none';
-        }, 4000);
-      }
-    };
-  
-    function startSessionTimer() {
-      const SESSION_TIMEOUT = 2 * 60 * 1000; // 1 minute
-      setTimeout(() => {
-        alert("Session expired. Please re-enter your access code.");
-        localStorage.removeItem("checkMyStenoUser");
-        location.reload();
-      }, SESSION_TIMEOUT);
-    }
-</script>
+    const FBCONFIG={apiKey:"AIzaSyDPkUWIrsibI-hzKJ8ljhvawdJ9Nq4-cpE",authDomain:"checkmysteno.firebaseapp.com",projectId:"checkmysteno",storageBucket:"checkmysteno.firebasestorage.app",messagingSenderId:"719325115943",appId:"1:719325115943:web:0dd50a67978816d42a8002"};firebase.initializeApp(FBCONFIG);const DB=firebase.firestore();const GID=id=>document.getElementById(id);function UL(m=atob("WW91ciBzZXNzaW9uIGhhcyBlbmRlZC4gUGxlYXNlIHJlLWVudGVyIHlvdXIgYWNjZXNzIGNvZGUu")){localStorage.removeItem(atob("Y2hlY2tNeVN0ZW5vVXNlcg=="));localStorage.removeItem(atob("Y3VycmVudEFjY2Vzc0NvZGU="));GID("mainContainer").style.display="none";GID("sidebar").style.display="none";GID("toggleSidebarBtn").style.display="none";GID("loginContainer").style.display="block";GID("loginError").textContent=m;GID("accessCode").value="";GID("toolFrame").src="";GID("toolFrame").style.display="none"}function validateAccessCode(){const C=GID("accessCode").value.trim();DB.collection(atob("YWNjZXNzQ29kZXM=")).doc(C).get().then(D=>{if(D.exists){const U=D.data();if(U.valid){localStorage.setItem(atob("Y2hlY2tNeVN0ZW5vVXNlcg=="),JSON.stringify(U));localStorage.setItem(atob("Y3VycmVudEFjY2Vzc0NvZGU="),C);GID("loginContainer").style.display="none";GID("mainContainer").style.display="flex";GID("sidebar").style.display="flex";GID("toggleSidebarBtn").style.display="none";GID("greeting").textContent=`${atob("V2VsY29tZSwg")}${U.name||C}!`;setTimeout(()=>{const G=GID("greeting");if(G)G.style.display='none'},4000);GID("loginError").textContent=""}else{UL(atob("QWNjZXNzIENvZGUgaXMgbm8gbG9uZ2VyIHZhbGlkLiBQbGVhc2UgY29udGFjdCBzdXBwb3J0Lg=="))}}else{GID("loginError").textContent=atob("SW52YWxpZCBBY2Nlc3MgQ29kZS4=")}}).catch(E=>{GID("loginError").textContent=`${atob("RXJyb3I6IA==")}${E.message}`})}function logout(){UL(atob("WW91IGhhdmUgYmVlbiBsb2dnZWQgb3V0IG1hbnVhbGx5Lg=="))}function loadTool(P){const I=GID("toolFrame");I.style.display="block";I.src=P;GID("defaultMessage").style.display="none";const S=GID("sidebar");const T=GID("toggleSidebarBtn");if(S)S.style.display="none";if(T)T.style.display="block"}GID("toggleSidebarBtn").onclick=function(){const S=GID("sidebar");const B=GID("toggleSidebarBtn");if(S.style.display==="none"){S.style.display="flex";B.textContent="✖ Close"}else{S.style.display="none";B.textContent="☰ Menu"}};let ACTimeout;function CACVOA(){const C=localStorage.getItem(atob("Y3VycmVudEFjY2Vzc0NvZGU="));const S=localStorage.getItem(atob("Y2hlY2tNeVN0ZW5vVXNlcg=="));if(!C||!S){return}clearTimeout(ACTimeout);ACTimeout=setTimeout(()=>{DB.collection(atob("YWNjZXNzQ29kZXM=")).doc(C).get().then(D=>{if(!D.exists||D.data().valid!==!0){UL(atob("WW91ciBzZXNzaW9uIGhhcyBiZWVuIHRlcm1pbmF0ZWQgYnkgdGhlIGFkbWluaXN0cmF0b3Igb3IgdGhlIGFjY2VzcyBjb2RlIGlzIG5vIGxvbmdlciB2YWxpZC4="))}}).catch(E=>{console.error(atob("RXJyb3IgY2hlY2tpbmcgYWNjZXNzIGNvZGUgdmFsaWRpdHkgb24gYWN0aXZpdHk6"),E);UL(atob("QSBjb25uZWN0aW9uIGVycm9yIG9jY3VycmVkIHdoaWxlIHZlcmlmeWluZyB5b3VyIHNlc3Npb24u"))})},1000)}document.addEventListener('click',CACVOA);document.addEventListener('mousemove',CACVOA);document.addEventListener('keydown',CACVOA);document.addEventListener('scroll',CACVOA);window.onload=function(){const S=localStorage.getItem(atob("Y2hlY2tNeVN0ZW5vVXNlcg=="));const C=localStorage.getItem(atob("Y3VycmVudEFjY2Vzc0NvZGU="));if(S&&C){GID("loginContainer").style.display="none";GID("mainContainer").style.display="flex";GID("sidebar").style.display="flex";GID("toggleSidebarBtn").style.display="none";const U=JSON.parse(S);GID("greeting").textContent=`${atob("V2VsY29tZSwg")}${U.name||'User'}!`;setTimeout(()=>{const G=GID("greeting");if(G)G.style.display='none'},4000);const A=DB.collection(atob("YWNjZXNzQ29kZXM=")).doc(C);A.onSnapshot(D=>{if(D.exists&&D.data().valid===!0){console.log(atob("QWNjZXNzIGNvZGUgaXMgc3RpbGwgdmFsaWQgdmJhIHJlYWwtdGltZSBsaXN0ZW5lci4="));GID("loginError").textContent=""}else{UL(atob("WW91ciBzZXNzaW9uIGhhcyBiZWVuIHRlcm1pbmF0ZWQgYnkgdGhlIGFkbWluaXN0cmF0b3Igb3IgdGhlIGFjY2VzcyBjb2RlIGlzIG5vIGxvbmdlciB2YWxpZC4="))}},E=>{console.error(atob("RXJyb3IgbGlzdGVuaW5nIHRvIGFjY2VzcyBjb2RlIHN0YXR1czo="),E);UL(atob("QSBjb25uZWN0aW9uIGVycm9yIG9jY3VycmVkIHdoaWxlIHZlcmlmeWluZyB5b3VyIHNlc3Npb24u"))})}else{GID("loginContainer").style.display="block";GID("mainContainer").style.display="none";GID("sidebar").style.display="none";GID("toggleSidebarBtn").style.display="none"}};
+  </script>
 </body>
 </html>
 
