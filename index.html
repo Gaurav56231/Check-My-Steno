@@ -4,39 +4,927 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Check My Steno</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.9.0/firebase-firestore-compat.js"></script>
   <style>
-    body,html{font-family:'Inter',sans-serif;margin:0;padding:0;height:100%;background-color:#f0f4f8}.main-container{display:flex;height:100vh}.sidebar{width:220px;background-color:#1f2937;color:white;padding:1rem;display:flex;flex-direction:column;gap:1rem;transition:transform .3s ease}.sidebar a{color:white;text-decoration:none;font-weight:bold;cursor:pointer}.sidebar a:hover{text-decoration:underline}.header{background-color:#4f46e5;color:white;padding:1rem;text-align:center;font-weight:bold;font-size:1.2rem}.content{flex:1;position:relative;background:#fff}#toolFrame{width:100%;height:100%;border:none;display:none}#defaultMessage{padding:2rem;text-align:center;font-size:1.2rem;color:#6b7280}#toggleSidebarBtn{position:absolute;top:10px;left:10px;z-index:1000;padding:6px 12px;font-size:16px;background-color:#0d9488;color:white;border:none;border-radius:6px;cursor:pointer;display:none}
+    /* CSS Variables for Theming */
+    :root {
+        /* Primary Backgrounds */
+        --primary-bg: #f3f4f6; /* Main content area */
+        --login-bg: white;
+        
+        /* Sidebar */
+        --sidebar-bg: #1e293b;
+        --sidebar-text: white;
+        --sidebar-hover-bg: rgba(255, 255, 255, 0.1);
+        --sidebar-shadow-color: rgba(0,0,0,0.1);
+
+        /* Header */
+        --header-gradient-start: #7c3aed;
+        --header-gradient-end: #4f46e5;
+        --header-text: white;
+        --header-shadow-color: rgba(0, 0, 0, 0.2);
+
+        /* Active Link */
+        --active-link-gradient-start: #6366f1;
+        --active-link-gradient-end: #ec4899;
+        --active-link-shadow-color: rgba(99, 102, 241, 0.4);
+        --active-link-border: white;
+
+        /* General Text & Elements */
+        --text-color: #333;
+        --secondary-text-color: #6b7280;
+        --input-border: #cbd5e1;
+        --input-focus-shadow: rgba(0, 0, 0, 0.15); /* For buttons/inputs */
+        --button-gradient-start: #6366f1;
+        --button-gradient-end: #ec4899;
+        --button-text: white;
+        --logout-color: #f87171; /* For logout button */
+        --error-color: #ef4444; /* For login error */
+        --card-bg: white;
+        --card-shadow: rgba(0, 0, 0, 0.08);
+        --card-border: #e2e8f0;
+
+        /* Toggle Button */
+        --toggle-btn-gradient-start: #6a82fb;
+        --toggle-btn-gradient-end: #fc5c7d;
+        --toggle-btn-text: white;
+        --toggle-btn-shadow: rgba(0, 0, 0, 0.15);
+    }
+
+    body, html {
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background-color: var(--primary-bg); /* Use variable */
+        color: var(--text-color); /* Use variable */
+        overflow-x: hidden;
+    }
+
+    #mainHeader {
+        background: linear-gradient(90deg, var(--header-gradient-start), var(--header-gradient-end)); /* Use variables */
+        color: var(--header-text); /* Use variable */
+        padding: 1.5rem 1rem;
+        text-align: center;
+        font-weight: 800;
+        font-size: 2.2rem;
+        box-shadow: 0 4px 15px var(--header-shadow-color); /* Use variable */
+        letter-spacing: -0.05rem;
+        transition: all 0.3s ease;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .main-content-area {
+        display: flex;
+        height: calc(100vh - 90px);
+        width: 100%;
+        position: relative;
+        transition: height 0.3s ease;
+    }
+    .main-content-area.fullscreen-active {
+        height: 100vh;
+    }
+
+    .sidebar {
+        width: 220px;
+        background-color: var(--sidebar-bg); /* Use variable */
+        color: var(--sidebar-text); /* Use variable */
+        padding: 1.5rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        transition: transform .3s ease;
+        box-shadow: 2px 0 10px var(--sidebar-shadow-color); /* Use variable */
+        position: absolute;
+        height: 100%;
+        left: 0;
+        top: 0;
+        z-index: 999;
+        transform: translateX(0%);
+        border-radius: 0 15px 15px 0;
+    }
+    .sidebar.hidden {
+        transform: translateX(-100%);
+    }
+    .sidebar h2 {
+        color: var(--sidebar-text); /* Use variable */
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    .sidebar a {
+        color: var(--sidebar-text); /* Use variable */
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        display: flex;
+        align-items: center;
+    }
+    .sidebar a:hover {
+        background-color: var(--sidebar-hover-bg); /* Use variable */
+        transform: translateX(5px);
+        box-shadow: 0 0 10px rgba(255,255,255,0.2);
+    }
+    .sidebar a svg, .sidebar a i {
+        margin-right: 0.8rem;
+        font-size: 1.1rem;
+    }
+    .sidebar a.active-link {
+        background: linear-gradient(135deg, var(--active-link-gradient-start), var(--active-link-gradient-end)); /* Use variables */
+        box-shadow: 0 4px 10px var(--active-link-shadow-color); /* Use variable */
+        border-left: 5px solid var(--active-link-border); /* Use variable */
+        padding-left: calc(1rem - 5px);
+    }
+    .sidebar a.logout-btn {
+        margin-top: auto;
+        color: var(--logout-color); /* Use variable */
+    }
+
+    .sidebar a.pulse-effect {
+        animation: pulse 0.3s ease-out;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); box-shadow: none; }
+        50% { transform: scale(1.02); box-shadow: 0 0 15px rgba(255, 255, 255, 0.4); }
+        100% { transform: scale(1); box-shadow: none; }
+    }
+
+    .content {
+        flex: 1;
+        position: relative;
+        background-color: var(--primary-bg); /* Use variable */
+        padding-left: 220px;
+        transition: padding-left 0.3s ease;
+        width: 100%;
+        box-sizing: border-box;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .main-content-area.fullscreen-active .content {
+        padding-left: 0;
+    }
+
+    .content-card {
+        background-color: var(--card-bg); /* Use variable */
+        border-radius: 15px;
+        box-shadow: 0 10px 30px var(--card-shadow); /* Use variable */
+        padding: 2rem;
+        max-width: 800px;
+        width: 90%;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 250px;
+        opacity: 0;
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    #defaultMessage h2 {
+        color: var(--text-color); /* Use variable */
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+    }
+    #defaultMessage p {
+        color: var(--secondary-text-color); /* Use variable */
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+    #defaultMessage svg {
+        color: var(--button-gradient-start); /* Icon color derived from button start gradient */
+    }
+
+
+    #toolFrame {
+        width: 100%;
+        height: 100%;
+        border: none;
+        display: none;
+        background-color: transparent;
+    }
+
+    #toggleSidebarBtn {
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1001;
+        padding: 0.6rem 0.9rem;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        background: linear-gradient(45deg, var(--toggle-btn-gradient-start) 0%, var(--toggle-btn-gradient-end) 100%); /* Use variables */
+        color: var(--toggle-btn-text); /* Use variable */
+        border: none;
+        cursor: pointer;
+        font-weight: 700;
+        box-shadow: 0 5px 15px var(--toggle-btn-shadow); /* Use variable */
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        display: none;
+    }
+    #toggleSidebarBtn:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 8px 20px var(--toggle-btn-shadow), 0 0 10px 3px rgba(255, 255, 255, 0.5);
+    }
+
+    #loginContainer {
+        padding: 3rem 2rem;
+        text-align: center;
+        max-width: 450px;
+        margin: 8% auto;
+        background-color: var(--login-bg); /* Use variable */
+        border-radius: 12px;
+        box-shadow: 0 10px 30px var(--card-shadow); /* Use variable */
+        border: 1px solid var(--card-border); /* Use variable */
+    }
+    #loginContainer h2 {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 2rem;
+        color: var(--text-color); /* Use variable */
+        letter-spacing: -0.02em;
+    }
+    #loginContainer input {
+        margin-bottom: 1.2rem;
+        padding: 0.75rem 1rem;
+        width: calc(100% - 2rem);
+        border: 1px solid var(--input-border); /* Use variable */
+        border-radius: 8px;
+        font-size: 1rem;
+        box-sizing: border-box;
+    }
+    #loginContainer button {
+        padding: 1rem 2.5rem;
+        background: linear-gradient(135deg, var(--button-gradient-start), var(--button-gradient-end)); /* Use variables */
+        color: var(--button-text); /* Use variable */
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 1.2rem;
+        font-weight: 700;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 5px 15px var(--input-focus-shadow); /* Use variable */
+        margin-top: 0.8rem;
+    }
+    #loginContainer button:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 8px 20px var(--input-focus-shadow), 0 0 10px 3px rgba(255, 255, 255, 0.5);
+    }
+    #loginError {
+        color: var(--error-color); /* Use variable */
+        margin-top: 1rem;
+        font-size: 0.95rem;
+    }
+
+    .plans-redirect-section {
+      margin-top: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--card-border); /* Use variable */
+    }
+    .plans-redirect-section p {
+      margin-bottom: 1.2rem;
+      color: var(--secondary-text-color); /* Use variable */
+      font-size: 1rem;
+    }
+    .plans-redirect-section button {
+      padding: 0.9rem 2rem;
+      background: linear-gradient(135deg, var(--button-gradient-start), var(--button-gradient-end)); /* Use variables */
+      color: var(--button-text); /* Use variable */
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 700;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 5px 15px var(--input-focus-shadow); /* Use variable */
+    }
+    .plans-redirect-section button:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 8px 20px var(--input-focus-shadow), 0 0 10px 3px rgba(255, 255, 255, 0.5);
+    }
+
+    #greeting {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--sidebar-bg); /* Use variable */
+        color: var(--sidebar-text); /* Use variable */
+        padding: 10px 20px;
+        border-radius: 8px;
+        z-index: 1000;
+        opacity: 0;
+        animation: fadeInOut 4s ease-out forwards;
+        font-size: 1.1rem;
+        font-weight: 600;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    @keyframes fadeInOut {
+        0% { opacity: 0; transform: translate(-50%, 20px); }
+        10% { opacity: 1; transform: translate(-50%, 0); }
+        90% { opacity: 1; transform: translate(-50%, 0); }
+        100% { opacity: 0; transform: translate(-50%, -20px); }
+    }
+
+    /* Theme selector specific styles */
+    .sidebar-section {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    .sidebar-section h3 {
+        color: white;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .sidebar-section select {
+        width: 100%;
+        padding: 0.6rem 0.8rem;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background-color: rgba(255, 255, 255, 0.05);
+        color: white;
+        font-size: 0.95rem;
+        cursor: pointer;
+        appearance: none;
+        background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%20viewBox%3D%220%200%20292.4%20292.4%22%3E%3Cpath%20fill%3D%22white%22%20d%3D%22M287%2069.3c-4.1-4.1-10.7-4.1-14.8%200L146.2%20205.8%2020.2%2069.3c-4.1-4.1-10.7-4.1-14.8%200%20c-4.1%204.1-4.1%2010.7%200%2014.8l133%20133c4.1%204.1%2010.7%204.1%2014.8%200l133-133C291.1%2080%20291.1%2073.4%20287%2069.3z%22%2F%3E%3C%2Fsvg%3E');
+        background-repeat: no-repeat;
+        background-position: right 0.7em top 50%, 0 0;
+        background-size: 0.65em auto, 100%;
+    }
+    .sidebar-section select option {
+        background-color: #1e293b;
+        color: white;
+    }
+
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        #toggleSidebarBtn {
+            padding: 0.5rem 0.8rem;
+            font-size: 0.8rem;
+        }
+        #loginContainer {
+            margin: 5% auto;
+            padding: 2rem 1.5rem;
+            width: 90%;
+            max-width: 380px;
+        }
+        #loginContainer h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+        #loginContainer input {
+            padding: 0.6rem 0.8rem;
+            font-size: 0.95rem;
+        }
+        #loginContainer button,
+        .plans-redirect-section button {
+            padding: 0.8rem 1.8rem;
+            font-size: 1rem;
+        }
+        #mainHeader {
+            font-size: 1.5rem;
+            padding: 1rem;
+        }
+        .main-content-area {
+            height: calc(100vh - 70px);
+        }
+        .content {
+            padding-left: 0;
+        }
+        .sidebar {
+            transform: translateX(-100%);
+            border-radius: 0;
+        }
+        .sidebar.active {
+            transform: translateX(0%);
+        }
+        #toggleSidebarBtn {
+            display: block;
+        }
+        .content-card {
+            padding: 1.5rem;
+        }
+        #defaultMessage h2 {
+            font-size: 1.5rem;
+        }
+        #defaultMessage p {
+            font-size: 1.0rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        #loginContainer {
+            margin: 2% auto;
+            padding: 1.5rem 1rem;
+        }
+        #loginContainer h2 {
+            font-size: 1.5rem;
+        }
+        #loginContainer input {
+            font-size: 0.9rem;
+        }
+        #loginContainer button,
+        .plans-redirect-section button {
+            padding: 0.7rem 1.5rem;
+            font-size: 0.9rem;
+        }
+    }
   </style>
 </head>
 <body>
-  <div class="header">Check My Steno Dashboard</div>
-  <div id="loginContainer" style="padding: 2rem; text-align: center;">
+  <div id="mainHeader">Check My Steno Dashboard</div>
+  <div id="loginContainer">
     <h2>Access Check My Steno</h2>
-    <input type="text" id="accessCode" placeholder="Enter Access Code" /><br /><br />
+    <input type="text" id="userName" placeholder="Enter Your Name" /><br />
+    <input type="email" id="userEmail" placeholder="Enter Your Email" /><br />
+    <input type="text" id="accessCode" placeholder="Enter Access Code" /><br />
     <button onclick="validateAccessCode()">Enter</button>
     <p id="loginError" style="color: red;"></p>
+
+    <div class="plans-redirect-section">
+        <p>Don't have an access code?</p>
+        <button onclick="redirectToPlans()">Subscribe Now</button>
+    </div>
   </div>
-  <div class="main-container" id="mainContainer" style="display: none;">
+
+  <div class="main-content-area" id="mainContentArea" style="display: none;">
     <button id="toggleSidebarBtn">☰ Menu</button>
     <div class="sidebar" id="sidebar">
       <h2 id="greeting">Welcome!</h2>
-      <a onclick="loadTool('home.html')">🏠 Home</a>
-      <a onclick="loadTool('practice-kc.html')">📋 Practice KC</a>
-      <a onclick="loadTool('test-analysis.html')">📊 Test Analysis</a>
-      <a onclick="loadTool('transcription-checker.html')">✅ transcription checker</a>
-      <a onclick="logout()" style="color: #f87171;">🚪 Logout</a>
+      <a onclick="loadTool('home.html', this)" class="active-link"><i class="fas fa-home"></i> Home</a>
+      <a onclick="loadTool('practice-kc.html', this)"><i class="fas fa-keyboard"></i> Practice KC</a>
+      <a onclick="loadTool('test-analysis.html', this)"><i class="fas fa-chart-line"></i> Test Analysis</a>
+      <a onclick="loadTool('transcription-checker.html', this)"><i class="fas fa-check-double"></i> Transcription Checker</a>
+      
+      <div class="sidebar-section">
+        <h3><i class="fas fa-palette"></i> Themes</h3>
+        <select id="themeSelector" onchange="applyTheme(this.value)">
+          </select>
+      </div>
+
+      <a onclick="logout()" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
     <div class="content">
-      <div id="defaultMessage">Select an option from the sidebar to begin.</div>
-      <iframe id="toolFrame" src="" frameborder="0"></iframe>
+        <div id="defaultMessage" class="content-card">
+            <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem;">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                <path d="M2 17l10 5 10-5"></path>
+                <path d="M2 12l10 5 10-5"></path>
+            </svg>
+            <h2>Welcome to Check My Steno Dashboard!</h2>
+            <p>Select an option from the sidebar to begin, or explore the pre-loaded Home page.</p>
+        </div>
+        <iframe id="toolFrame" src="" frameborder="0"></iframe>
     </div>
   </div>
+
   <script>
-    const FBCONFIG={apiKey:"AIzaSyDPkUWIrsibI-hzKJ8ljhvawdJ9Nq4-cpE",authDomain:"checkmysteno.firebaseapp.com",projectId:"checkmysteno",storageBucket:"checkmysteno.firebasestorage.app",messagingSenderId:"719325115943",appId:"1:719325115943:web:0dd50a67978816d42a8002"};firebase.initializeApp(FBCONFIG);const DB=firebase.firestore();const GID=id=>document.getElementById(id);function UL(m=atob("WW91ciBzZXNzaW9uIGhhcyBlbmRlZC4gUGxlYXNlIHJlLWVudGVyIHlvdXIgYWNjZXNzIGNvZGUu")){localStorage.removeItem(atob("Y2hlY2tNeVN0ZW5vVXNlcg=="));localStorage.removeItem(atob("Y3VycmVudEFjY2Vzc0NvZGU="));GID("mainContainer").style.display="none";GID("sidebar").style.display="none";GID("toggleSidebarBtn").style.display="none";GID("loginContainer").style.display="block";GID("loginError").textContent=m;GID("accessCode").value="";GID("toolFrame").src="";GID("toolFrame").style.display="none"}function validateAccessCode(){const C=GID("accessCode").value.trim();DB.collection(atob("YWNjZXNzQ29kZXM=")).doc(C).get().then(D=>{if(D.exists){const U=D.data();if(U.valid){localStorage.setItem(atob("Y2hlY2tNeVN0ZW5vVXNlcg=="),JSON.stringify(U));localStorage.setItem(atob("Y3VycmVudEFjY2Vzc0NvZGU="),C);GID("loginContainer").style.display="none";GID("mainContainer").style.display="flex";GID("sidebar").style.display="flex";GID("toggleSidebarBtn").style.display="none";GID("greeting").textContent=`${atob("V2VsY29tZSwg")}${U.name||C}!`;setTimeout(()=>{const G=GID("greeting");if(G)G.style.display='none'},4000);GID("loginError").textContent=""}else{UL(atob("QWNjZXNzIENvZGUgaXMgbm8gbG9uZ2VyIHZhbGlkLiBQbGVhc2UgY29udGFjdCBzdXBwb3J0Lg=="))}}else{GID("loginError").textContent=atob("SW52YWxpZCBBY2Nlc3MgQ29kZS4=")}}).catch(E=>{GID("loginError").textContent=`${atob("RXJyb3I6IA==")}${E.message}`})}function logout(){UL(atob("WW91IGhhdmUgYmVlbiBsb2dnZWQgb3V0IG1hbnVhbGx5Lg=="))}function loadTool(P){const I=GID("toolFrame");I.style.display="block";I.src=P;GID("defaultMessage").style.display="none";const S=GID("sidebar");const T=GID("toggleSidebarBtn");if(S)S.style.display="none";if(T)T.style.display="block"}GID("toggleSidebarBtn").onclick=function(){const S=GID("sidebar");const B=GID("toggleSidebarBtn");if(S.style.display==="none"){S.style.display="flex";B.textContent="✖ Close"}else{S.style.display="none";B.textContent="☰ Menu"}};let ACTimeout;function CACVOA(){const C=localStorage.getItem(atob("Y3VycmVudEFjY2Vzc0NvZGU="));const S=localStorage.getItem(atob("Y2hlY2tNeVN0ZW5vVXNlcg=="));if(!C||!S){return}clearTimeout(ACTimeout);ACTimeout=setTimeout(()=>{DB.collection(atob("YWNjZXNzQ29kZXM=")).doc(C).get().then(D=>{if(!D.exists||D.data().valid!==!0){UL(atob("WW91ciBzZXNzaW9uIGhhcyBiZWVuIHRlcm1pbmF0ZWQgYnkgdGhlIGFkbWluaXN0cmF0b3Igb3IgdGhlIGFjY2VzcyBjb2RlIGlzIG5vIGxvbmdlciB2YWxpZC4="))}}).catch(E=>{console.error(atob("RXJyb3IgY2hlY2tpbmcgYWNjZXNzIGNvZGUgdmFsaWRpdHkgb24gYWN0aXZpdHk6"),E);UL(atob("QSBjb25uZWN0aW9uIGVycm9yIG9jY3VycmVkIHdoaWxlIHZlcmlmeWluZyB5b3VyIHNlc3Npb24u"))})},1000)}document.addEventListener('click',CACVOA);document.addEventListener('mousemove',CACVOA);document.addEventListener('keydown',CACVOA);document.addEventListener('scroll',CACVOA);window.onload=function(){const S=localStorage.getItem(atob("Y2hlY2tNeVN0ZW5vVXNlcg=="));const C=localStorage.getItem(atob("Y3VycmVudEFjY2Vzc0NvZGU="));if(S&&C){GID("loginContainer").style.display="none";GID("mainContainer").style.display="flex";GID("sidebar").style.display="flex";GID("toggleSidebarBtn").style.display="none";const U=JSON.parse(S);GID("greeting").textContent=`${atob("V2VsY29tZSwg")}${U.name||'User'}!`;setTimeout(()=>{const G=GID("greeting");if(G)G.style.display='none'},4000);const A=DB.collection(atob("YWNjZXNzQ29kZXM=")).doc(C);A.onSnapshot(D=>{if(D.exists&&D.data().valid===!0){console.log(atob("QWNjZXNzIGNvZGUgaXMgc3RpbGwgdmFsaWQgdmJhIHJlYWwtdGltZSBsaXN0ZW5lci4="));GID("loginError").textContent=""}else{UL(atob("WW91ciBzZXNzaW9uIGhhcyBiZWVuIHRlcm1pbmF0ZWQgYnkgdGhlIGFkbWluaXN0cmF0b3Igb3IgdGhlIGFjY2VzcyBjb2RlIGlzIG5vIGxvbmdlciB2YWxpZC4="))}},E=>{console.error(atob("RXJyb3IgbGlzdGVuaW5nIHRvIGFjY2VzcyBjb2RlIHN0YXR1czo="),E);UL(atob("QSBjb25uZWN0aW9uIGVycm9yIG9jY3VycmVkIHdoaWxlIHZlcmlmeWluZyB5b3VyIHNlc3Npb24u"))})}else{GID("loginContainer").style.display="block";GID("mainContainer").style.display="none";GID("sidebar").style.display="none";GID("toggleSidebarBtn").style.display="none"}};
+    const FBCONFIG = {apiKey:"AIzaSyDPkUWIrsibI-hzKJ8ljhvawdJ9Nq4-cpE",authDomain:"checkmysteno.firebaseapp.com",projectId:"checkmysteno",storageBucket:"checkmysteno.firebasestorage.app",messagingSenderId:"719325115943",appId:"1:719325115943:web:0dd50a67978816d42a8002"};
+    firebase.initializeApp(FBCONFIG);
+    const DB = firebase.firestore();
+    const GID = id => document.getElementById(id);
+
+    let accessCodeUnsubscribe = null;
+
+    // Theme definitions
+    const themes = {
+        'Default': {
+            '--primary-bg': '#f3f4f6',
+            '--login-bg': 'white',
+            '--sidebar-bg': '#1e293b',
+            '--sidebar-text': 'white',
+            '--sidebar-hover-bg': 'rgba(255, 255, 255, 0.1)',
+            '--sidebar-shadow-color': 'rgba(0,0,0,0.1)',
+            '--header-gradient-start': '#7c3aed',
+            '--header-gradient-end': '#4f46e5',
+            '--header-text': 'white',
+            '--header-shadow-color': 'rgba(0, 0, 0, 0.2)',
+            '--active-link-gradient-start': '#6366f1',
+            '--active-link-gradient-end': '#ec4899',
+            '--active-link-shadow-color': 'rgba(99, 102, 241, 0.4)',
+            '--active-link-border': 'white',
+            '--text-color': '#333',
+            '--secondary-text-color': '#6b7280',
+            '--input-border': '#cbd5e1',
+            '--input-focus-shadow': 'rgba(0, 0, 0, 0.15)',
+            '--button-gradient-start': '#6366f1',
+            '--button-gradient-end': '#ec4899',
+            '--button-text': 'white',
+            '--logout-color': '#f87171',
+            '--error-color': '#ef4444',
+            '--card-bg': 'white',
+            '--card-shadow': 'rgba(0, 0, 0, 0.08)',
+            '--card-border': '#e2e8f0',
+            '--toggle-btn-gradient-start': '#6a82fb',
+            '--toggle-btn-gradient-end': '#fc5c7d',
+            '--toggle-btn-text': 'white',
+            '--toggle-btn-shadow': 'rgba(0, 0, 0, 0.15)',
+        },
+        'Dark': {
+            '--primary-bg': '#1a202c',
+            '--login-bg': '#2d3748',
+            '--sidebar-bg': '#2d3748',
+            '--sidebar-text': '#f7fafc',
+            '--sidebar-hover-bg': 'rgba(255, 255, 255, 0.08)',
+            '--sidebar-shadow-color': 'rgba(0,0,0,0.4)',
+            '--header-gradient-start': '#4a5568',
+            '--header-gradient-end': '#2d3748',
+            '--header-text': '#f7fafc',
+            '--header-shadow-color': 'rgba(0, 0, 0, 0.4)',
+            '--active-link-gradient-start': '#ecc94b',
+            '--active-link-gradient-end': '#ed8936',
+            '--active-link-shadow-color': 'rgba(236, 178, 101, 0.4)',
+            '--active-link-border': '#ecc94b',
+            '--text-color': '#f7fafc',
+            '--secondary-text-color': '#cbd5e1',
+            '--input-border': '#4a5568',
+            '--input-focus-shadow': 'rgba(0, 0, 0, 0.3)',
+            '--button-gradient-start': '#ecc94b',
+            '--button-gradient-end': '#ed8936',
+            '--button-text': '#2d3748',
+            '--logout-color': '#feb2b2',
+            '--error-color': '#fc8181',
+            '--card-bg': '#2d3748',
+            '--card-shadow': 'rgba(0, 0, 0, 0.3)',
+            '--card-border': '#4a5568',
+            '--toggle-btn-gradient-start': '#6a82fb',
+            '--toggle-btn-gradient-end': '#fc5c7d',
+            '--toggle-btn-text': 'white',
+            '--toggle-btn-shadow': 'rgba(0, 0, 0, 0.3)',
+        },
+        'Ocean Blue': {
+            '--primary-bg': '#e0f2f7',
+            '--login-bg': '#ffffff',
+            '--sidebar-bg': '#0a1d37',
+            '--sidebar-text': '#e0f2f7',
+            '--sidebar-hover-bg': 'rgba(173, 216, 230, 0.1)',
+            '--sidebar-shadow-color': 'rgba(0,0,0,0.15)',
+            '--header-gradient-start': '#4299e1',
+            '--header-gradient-end': '#3182ce',
+            '--header-text': 'white',
+            '--header-shadow-color': 'rgba(0, 0, 0, 0.15)',
+            '--active-link-gradient-start': '#667eea',
+            '--active-link-gradient-end': '#764ba2',
+            '--active-link-shadow-color': 'rgba(102, 126, 234, 0.4)',
+            '--active-link-border': 'white',
+            '--text-color': '#2a4365',
+            '--secondary-text-color': '#4a5568',
+            '--input-border': '#a0aec0',
+            '--input-focus-shadow': 'rgba(0, 0, 0, 0.1)',
+            '--button-gradient-start': '#4299e1',
+            '--button-gradient-end': '#3182ce',
+            '--button-text': 'white',
+            '--logout-color': '#f56565',
+            '--error-color': '#e53e3e',
+            '--card-bg': 'white',
+            '--card-shadow': 'rgba(0, 0, 0, 0.08)',
+            '--card-border': '#edf2f7',
+            '--toggle-btn-gradient-start': '#4299e1',
+            '--toggle-btn-gradient-end': '#3182ce',
+            '--toggle-btn-text': 'white',
+            '--toggle-btn-shadow': 'rgba(0, 0, 0, 0.15)',
+        },
+        'Forest Green': {
+            '--primary-bg': '#f0fdf4',
+            '--login-bg': '#ffffff',
+            '--sidebar-bg': '#143105',
+            '--sidebar-text': '#ecfdf5',
+            '--sidebar-hover-bg': 'rgba(144, 238, 144, 0.1)',
+            '--sidebar-shadow-color': 'rgba(0,0,0,0.1)',
+            '--header-gradient-start': '#38a169',
+            '--header-gradient-end': '#2f855a',
+            '--header-text': 'white',
+            '--header-shadow-color': 'rgba(0, 0, 0, 0.15)',
+            '--active-link-gradient-start': '#48bb78',
+            '--active-link-gradient-end': '#38a169',
+            '--active-link-shadow-color': 'rgba(72, 187, 120, 0.4)',
+            '--active-link-border': 'white',
+            '--text-color': '#2d3748',
+            '--secondary-text-color': '#4a5568',
+            '--input-border': '#a0aec0',
+            '--input-focus-shadow': 'rgba(0, 0, 0, 0.1)',
+            '--button-gradient-start': '#38a169',
+            '--button-gradient-end': '#2f855a',
+            '--button-text': 'white',
+            '--logout-color': '#e53e3e',
+            '--error-color': '#c53030',
+            '--card-bg': 'white',
+            '--card-shadow': 'rgba(0, 0, 0, 0.08)',
+            '--card-border': '#edf2f7',
+            '--toggle-btn-gradient-start': '#38a169',
+            '--toggle-btn-gradient-end': '#2f855a',
+            '--toggle-btn-text': 'white',
+            '--toggle-btn-shadow': 'rgba(0, 0, 0, 0.15)',
+        }
+    };
+
+    function applyTheme(themeName) {
+        const selectedTheme = themes[themeName];
+        if (selectedTheme) {
+            for (const [property, value] of Object.entries(selectedTheme)) {
+                document.documentElement.style.setProperty(property, value);
+            }
+            localStorage.setItem('selectedTheme', themeName);
+        } else {
+            console.warn('Theme not found:', themeName);
+        }
+    }
+
+    function initializeThemes() {
+        const themeSelector = GID('themeSelector');
+        if (themeSelector) {
+            themeSelector.innerHTML = ''; 
+            for (const themeName in themes) {
+                const option = document.createElement('option');
+                option.value = themeName;
+                option.textContent = themeName;
+                themeSelector.appendChild(option);
+            }
+
+            const savedTheme = localStorage.getItem('selectedTheme') || 'Default';
+            if (themes[savedTheme]) {
+                applyTheme(savedTheme);
+                themeSelector.value = savedTheme;
+            } else {
+                applyTheme('Default');
+                themeSelector.value = 'Default';
+            }
+        }
+    }
+
+
+    function UL(m=atob("WW91ciBzZXNzaW9uIGhhcyBlbmRlZC4gUGxlYXNlIHJlLWVudGVyIHlvdXIgYWNjZXNzIGNvZGUu")) {
+        if (accessCodeUnsubscribe) {
+            accessCodeUnsubscribe();
+            accessCodeUnsubscribe = null;
+            console.log("Unsubscribed from access code listener.");
+        }
+        localStorage.removeItem(atob("Y2hlY2tNeVN0ZW5vVXNlcg==")); // "checkMyStenoUser"
+        localStorage.removeItem(atob("Y3VycmVudEFjY2Vzc0NvZGU=")); // "currentAccessCode"
+        GID("loginContainer").style.display = "block";
+        GID("mainContentArea").style.display = "none"; 
+        GID("mainHeader").style.display = "block";
+        GID("toggleSidebarBtn").style.display = "none";
+        GID("loginError").textContent = m;
+        GID("accessCode").value = "";
+        
+        GID("toolFrame").src = "";
+        GID("toolFrame").style.display = "none";
+        GID("defaultMessage").style.display = "block"; 
+
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.classList.remove('active-link');
+        });
+    }
+
+    function startAccessCodeListener() {
+        const currentAccessCode = localStorage.getItem(atob("Y3VycmVudEFjY2Vzc0NvZGU="));
+        if (!currentAccessCode) {
+            console.warn("No current access code found in localStorage to start listener.");
+            return;
+        }
+
+        if (accessCodeUnsubscribe) {
+            accessCodeUnsubscribe();
+            console.log("Existing access code listener unsubscribed before new one.");
+        }
+
+        const accessCodeRef = DB.collection(atob("YWNjZXNzQ29kZXM=")).doc(currentAccessCode);
+
+        accessCodeUnsubscribe = accessCodeRef.onSnapshot(doc => {
+            if (doc.exists && doc.data().valid === true) {
+                console.log(atob("QWNjZXNzIGNvZGUgaXMgc3RpbGwgdmFsaWQgdmJhIHJlYWwtdGltZSBsaXN0ZW5lci4="));
+                GID("loginError").textContent = "";
+            } else {
+                console.log("Access code no longer valid or document does not exist. Logging out.");
+                UL(atob("WW91ciBzZXNzaW9uIGhhcyBiZWVuIHRlcm1pbmF0ZWQgYnkgdGhlIGFkbWluaXN0cmF0b3Igb3IgdGhlIGFjY2VzcyBjb2RlIGlzIG5vIGxvbmdlciB2YWxpZC4="));
+            }
+        }, error => {
+            console.error(atob("RXJyb3IgbGlzdGVuaW5nIHRvIGFjY2VzcyBjb2RlIHN0YXR1czo="), error);
+            UL(atob("QSBjb25uZWN0aW9uIGVycm9yIG9jY3VycmVkIHdoaWxlIHZlcnlmeW91ciBzZXNzaW9uLg=="));
+        });
+    }
+
+    function validateAccessCode() {
+        const code = GID("accessCode").value.trim();
+        const name = GID("userName").value.trim();
+        const email = GID("userEmail").value.trim();
+
+        if (!name || !email || !code) {
+            GID("loginError").textContent = "Name, email, and access code are required.";
+            return;
+        }
+
+        const accessCodeRef = DB.collection(atob("YWNjZXNzQ29kZXM=")).doc(code);
+        accessCodeRef.get().then(doc => {
+            if (doc.exists) {
+                const userData = doc.data();
+                if (userData.valid) {
+                    DB.collection("userLogins")
+                        .where("name", "==", name)
+                        .where("email", "==", email)
+                        .get()
+                        .then(querySnapshot => {
+                            if (!querySnapshot.empty) {
+                                querySnapshot.docs[0].ref.update({
+                                    usedAccessCode: code,
+                                    loginTimestamp: firebase.firestore.FieldValue.serverTimestamp()
+                                }).then(() => {
+                                    localStorage.setItem(atob("Y2hlY2tNeVN0ZW5vVXNlcg=="), JSON.stringify(userData));
+                                    localStorage.setItem(atob("Y3VycmVudEFjY2Vzc0NvZGU="), code);
+                                    
+                                    GID("loginContainer").style.display = "none";
+                                    GID("mainContentArea").style.display = "flex"; 
+                                    
+                                    GID("greeting").textContent = `${atob("V2VsY29tZSwg")}${userData.name || name}!`;
+                                    GID("greeting").style.animation = 'none';
+                                    GID("greeting").offsetHeight;
+                                    GID("greeting").style.animation = null; 
+                                    
+                                    startAccessCodeListener();
+                                    
+                                    loadTool('home.html', document.querySelector('.sidebar a[onclick*="home.html"]'));
+                                }).catch(error => {
+                                    GID("loginError").textContent = `Error updating login: ${error.message}`;
+                                });
+                            } else {
+                                DB.collection("userLogins").add({
+                                    name: name,
+                                    email: email,
+                                    usedAccessCode: code,
+                                    loginTimestamp: firebase.firestore.FieldValue.serverTimestamp()
+                                }).then(() => {
+                                    localStorage.setItem(atob("Y2hlY2tNeVN0ZW5vVXNlcg=="), JSON.stringify(userData));
+                                    localStorage.setItem(atob("Y3VycmVudEFjY2Vzc0NvZGU="), code);
+                                    
+                                    GID("loginContainer").style.display = "none";
+                                    GID("mainContentArea").style.display = "flex";
+
+                                    GID("greeting").textContent = `${atob("V2VsY29tZSwg")}${name || 'User'}!`;
+                                    GID("greeting").style.animation = 'none';
+                                    GID("greeting").offsetHeight;
+                                    GID("greeting").style.animation = null; 
+                                    
+                                    startAccessCodeListener();
+                                    
+                                    loadTool('home.html', document.querySelector('.sidebar a[onclick*="home.html"]'));
+                                }).catch(error => {
+                                    GID("loginError").textContent = `Error recording login: ${error.message}`;
+                                });
+                            }
+                        }).catch(error => {
+                            GID("loginError").textContent = `Error checking existing user: ${error.message}`;
+                        });
+                } else {
+                    UL(atob("QWNjZXNzIENvZGUgaXMgbm8gbG9uZ2VyIHZhbGlkLiBQbGVhc2UgY29udGFjdCBzdXBwb3J0Lg=="));
+                }
+            } else {
+                GID("loginError").textContent = atob("SW52YWxpZCBBY2Nlc3MgQ29kZS4=");
+            }
+        }).catch(E => {
+            GID("loginError").textContent = `${atob("RXJyb3I6IA==")}${E.message}`;
+        });
+    }
+
+    function logout() { UL(atob("WW91IGhhdmUgYmVlbiBsb2dnZWQgb3V0IG1hbnVhbGx5Lg==")); }
+
+    function loadTool(P, clickedLink) {
+        const I = GID("toolFrame");
+        const S = GID("sidebar");
+        const T = GID("toggleSidebarBtn");
+        const H = GID("mainHeader");
+        const MCA = GID("mainContentArea");
+        const DM = GID("defaultMessage"); 
+
+        if (DM) DM.style.display = "none";
+
+        I.style.display = "block";
+        I.src = P;
+
+        if (H) H.style.display = 'none';
+        if (S) {
+            S.classList.add('hidden');
+            if (window.innerWidth <= 768) {
+                S.classList.remove('active');
+            }
+        }
+        if (MCA) MCA.classList.add('fullscreen-active');
+
+        if (T) {
+            T.style.display = "block";
+            T.textContent = "☰ Menu";
+        }
+
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.classList.remove('active-link');
+        });
+        if (clickedLink) {
+            clickedLink.classList.add('active-link');
+            clickedLink.classList.add('pulse-effect');
+            setTimeout(() => {
+                clickedLink.classList.remove('pulse-effect');
+            }, 300);
+        }
+    }
+
+    GID("toggleSidebarBtn").onclick = function() {
+        const S = GID("sidebar");
+        const B = GID("toggleSidebarBtn");
+        const H = GID("mainHeader");
+        const MCA = GID("mainContentArea");
+        const I = GID("toolFrame"); 
+        const DM = GID("defaultMessage"); 
+
+        if (S.classList.contains('hidden')) {
+            if (H) H.style.display = 'block';
+            if (S) {
+                S.classList.remove('hidden');
+                if (window.innerWidth <= 768) {
+                    S.classList.add('active');
+                }
+            }
+            if (MCA) MCA.classList.remove('fullscreen-active');
+            B.textContent = "✖ Close";
+
+            if (I) I.src = "";
+            if (I) I.style.display = "none";
+            if (DM) DM.style.display = "block";
+            
+            document.querySelectorAll('.sidebar a').forEach(link => {
+                link.classList.remove('active-link');
+            });
+
+        } else {
+            if (H) H.style.display = 'none';
+            if (S) {
+                S.classList.add('hidden');
+                if (window.innerWidth <= 768) {
+                    S.classList.remove('active');
+                }
+            }
+            if (MCA) MCA.classList.add('fullscreen-active');
+            B.textContent = "☰ Menu";
+        }
+    };
+
+    function redirectToPlans() {
+        window.location.href = 'plans.html';
+    }
+
+    window.onload = function() {
+        initializeThemes(); // Initialize themes on page load
+        const S_local = localStorage.getItem(atob("Y2hlY2tNeVN0ZW5vVXNlcg=="));
+        const C_local = localStorage.getItem(atob("Y3VycmVudEFjY2Vzc0NvZGU="));
+
+        if (S_local && C_local) {
+            GID("loginContainer").style.display = "none";
+            GID("mainContentArea").style.display = "flex"; 
+            
+            const U = JSON.parse(S_local);
+            GID("greeting").textContent = `${atob("V2VsY29tZSwg")}${(U.name || 'User')}!`;
+            GID("greeting").style.animation = 'none';
+            GID("greeting").offsetHeight;
+            GID("greeting").style.animation = 'fadeInOut 4s ease-out forwards';
+            
+            startAccessCodeListener();
+            
+            loadTool('home.html', document.querySelector('.sidebar a[onclick*="home.html"]')); 
+        } else {
+            GID("loginContainer").style.display = "block";
+            GID("mainContentArea").style.display = "none";
+            GID("sidebar").classList.add('hidden'); 
+            GID("mainHeader").style.display = "block"; 
+            GID("toggleSidebarBtn").style.display = "none";
+            GID("toolFrame").style.display = "none";
+            GID("defaultMessage").style.display = "block";
+        }
+    };
   </script>
 </body>
 </html>
-
