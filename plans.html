@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Plans - Check My Steno</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* General Body and Layout */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f0f4f8;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: auto; /* Allow horizontal scrolling for the entire page if content overflows */
+        }
+
+        /* Hide scrollbar for aesthetics (for body overflow-x) */
+        body::-webkit-scrollbar {
+            display: none;
+        }
+        body {
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+
+        /* Header */
+        .header {
+            background-color: #4f46e5;
+            color: white;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            font-weight: 800;
+            font-size: 2.2rem;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: -0.05rem;
+        }
+
+        /* Tagline - Adjusted for vertical positioning */
+        .tagline {
+            text-align: center;
+            margin: 1.5rem 0 2.5rem;
+            font-size: 1.25rem;
+            color: #374151;
+            max-width: 900px;
+            padding: 0 1.5rem;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        /* Plans Container - Display all cards side-by-side, no wrapping */
+        .plans-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 2rem;
+            padding: 0 1rem;
+            min-width: calc(3 * 320px + 2 * 2rem + 2 * 1rem); /* 3 cards * card width + 2 gaps + 2x container padding */
+            margin-bottom: 3rem;
+        }
+
+        /* Plan Card - Individual card styling */
+        .plan-card {
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            width: 320px; /* Fixed width for each card */
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white; /* Default text color for cards with gradients */
+            transform: translateZ(0); /* Helps prevent flickering during transforms */
+        }
+        .plan-card:hover {
+            transform: translateY(-10px) scale(1.02) translateZ(0); /* Add translateZ(0) to hover also */
+        }
+
+        /* Gold Pass Colors and Highlight */
+        .plan-card.gold-highlight {
+            background: linear-gradient(180deg, #6a82fb 0%, #fc5c7d 100%);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15), 0 0 8px 3px #FFD700; /* Shiny gold outline glow */
+        }
+        .plan-card.gold-highlight:hover {
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25), 0 0 12px 5px #FFD700; /* Larger, more intense glow on hover */
+        }
+        .plan-card.gold-highlight .benefits-list li::before {
+            color: #ffe082;
+        }
+        .plan-card.gold-highlight button {
+            background-color: #ffeb3b;
+            color: #333;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .plan-card.gold-highlight button:hover {
+            background-color: #ffda00;
+        }
+        .plan-card.gold-highlight .old-price {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Silver Pass Colors */
+        .plan-card.silver-colors {
+            background: linear-gradient(180deg, #20bdff 0%, #a5bec7 100%);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15), 0 0 8px 3px #E0E0E0; /* Shiny silver outline glow */
+        }
+        .plan-card.silver-colors:hover {
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25), 0 0 12px 5px #E0E0E0; /* Larger, more intense glow on hover */
+        }
+        .plan-card.silver-colors .benefits-list li::before {
+            color: #b2ebf2;
+        }
+        .plan-card.silver-colors button {
+            background-color: #20bdff;
+            color: white;
+        }
+        .plan-card.silver-colors button:hover {
+            background-color: #008cc7;
+        }
+        .plan-card.silver-colors .old-price {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Bronze Pass Colors */
+        .plan-card.bronze-colors {
+            background: linear-gradient(180deg, #CD7F32 0%, #8B4513 100%);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15), 0 0 8px 3px #DAA520; /* Shiny bronze outline glow */
+        }
+        .plan-card.bronze-colors:hover {
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25), 0 0 12px 5px #DAA520; /* Larger, more intense glow on hover */
+        }
+        .plan-card.bronze-colors .benefits-list li::before {
+            color: #E0B286;
+        }
+        .plan-card.bronze-colors button {
+            background-color: #A0522D;
+            color: white;
+        }
+        .plan-card.bronze-colors button:hover {
+            background-color: #7B3F00;
+        }
+        .plan-card.bronze-colors .old-price {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Plan Card Content (Text styles inside cards) */
+        .plan-card h3 {
+            font-size: 2.2rem;
+            margin-bottom: 0.8rem;
+            font-weight: 800;
+            letter-spacing: -0.05rem;
+            line-height: 1.1;
+        }
+        .plan-card .price {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 0.5rem;
+            display: block;
+            line-height: 1;
+        }
+        .plan-card .price .old-price {
+            font-size: 1.4rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: line-through;
+            margin-left: 0.8rem;
+            font-weight: 600;
+        }
+        .plan-card .discount {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ef4444; /* Red for discount */
+            margin-bottom: 1.2rem;
+            text-transform: uppercase;
+        }
+        .plan-card .validity {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+        .plan-card .subtitle {
+            font-size: 1.05rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 1rem;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+            font-weight: 500;
+        }
+
+        /* Benefits List */
+        .plan-card .benefits-list {
+            list-style: none;
+            padding: 0;
+            margin: 2rem 0;
+            text-align: left;
+            flex-grow: 1;
+        }
+        .plan-card .benefits-list li {
+            margin-bottom: 0.8rem;
+            font-size: 0.98rem;
+            color: white;
+            display: flex;
+            align-items: flex-start; /* Aligns content to the top of the line */
+            line-height: 1.4;
+        }
+        .plan-card .benefits-list li::before {
+            content: '✓';
+            color: #10b981; /* Default green for checkmark */
+            margin-right: 0.8rem;
+            font-weight: 900;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            margin-top: 0px; /* Adjusted to align with flex-start */
+        }
+
+        /* Exclusive Feature Highlight - More Attractive/Shiny */
+        .plan-card .benefits-list li.exclusive-feature-line {
+            font-size: 1.15rem;
+            font-weight: 900;
+            color: white; /* Ensure text itself is bright white for contrast */
+            letter-spacing: 0.03rem;
+            padding: 2px 0;
+        }
+
+        /* Gold Exclusive Feature Glow */
+        .gold-highlight .exclusive-feature-line {
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.9), /* Gold color */
+                         0 0 30px rgba(255, 215, 0, 0.7),
+                         0 0 50px rgba(255, 215, 0, 0.5);
+        }
+        .gold-highlight .exclusive-feature-line::before { color: #ffeb3b !important; } /* Ensure checkmark matches */
+
+        /* Silver Exclusive Feature Glow */
+        .silver-colors .exclusive-feature-line {
+            text-shadow: 0 0 15px rgba(224, 224, 224, 0.9), /* Silver color */
+                         0 0 30px rgba(224, 224, 224, 0.7),
+                         0 0 50px rgba(224, 224, 224, 0.5);
+        }
+        .silver-colors .exclusive-feature-line::before { color: #b2ebf2 !important; } /* Ensure checkmark matches */
+
+        /* Bronze Exclusive Feature Glow */
+        .bronze-colors .exclusive-feature-line {
+            text-shadow: 0 0 15px rgba(218, 165, 32, 0.9), /* Goldenrod/Bronze color */
+                         0 0 30px rgba(218, 165, 32, 0.7),
+                         0 0 50px rgba(218, 165, 32, 0.5);
+        }
+        .bronze-colors .exclusive-feature-line::before { color: #E0B286 !important; } /* Ensure checkmark matches */
+
+
+        /* Buttons */
+        .plan-card button {
+            background-color: #0d9488;
+            color: white;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: auto;
+            letter-spacing: 0.02rem;
+        }
+        .plan-card button:hover {
+            background-color: #057a6e;
+            transform: translateY(-2px);
+        }
+
+        /* Highlight Section (Stays static below the cards) */
+        .highlight-section {
+            background-color: #e0f2f7;
+            padding: 2rem 2.5rem;
+            border-radius: 12px;
+            text-align: center;
+            margin: 3rem auto;
+            max-width: 900px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            border: 1px solid #b2ebf2;
+        }
+        .highlight-section h4 {
+            color: #0d9488;
+            font-size: 1.8rem;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            font-weight: 800;
+        }
+        .highlight-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .highlight-section ul li {
+            font-size: 1.1rem;
+            color: #374151;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            line-height: 1.4;
+        }
+        .highlight-section ul li::before {
+            content: '✨';
+            margin-right: 0.8rem;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        /* Back Button */
+        .back-button {
+            margin: 3rem auto;
+            padding: 0.8rem 2rem;
+            background-color: #6b7280;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            letter-spacing: 0.02rem;
+        }
+        .back-button:hover {
+            background-color: #4b5563;
+            transform: translateY(-2px);
+        }
+
+        /* Responsive Adjustments for 3-card non-wrapping layout */
+        @media (max-width: 1024px) {
+            .header {
+                font-size: 1.8rem;
+                padding: 1rem;
+            }
+            .tagline {
+                font-size: 1.1rem;
+                margin: 1rem 0 1rem;
+            }
+            .plans-container {
+                gap: 1.5rem;
+                padding: 0 0.5rem;
+                min-width: calc(3 * 300px + 2 * 1.5rem + 2 * 0.5rem);
+            }
+            .plan-card {
+                width: 300px;
+                padding: 1.5rem;
+            }
+            .plan-card h3 {
+                font-size: 1.9rem;
+            }
+            .plan-card .price {
+                font-size: 3rem;
+            }
+            .plan-card button {
+                padding: 0.8rem 1rem;
+                font-size: 1.05rem;
+            }
+            .highlight-section {
+                padding: 1.5rem;
+                margin: 2rem auto;
+            }
+            .highlight-section h4 {
+                font-size: 1.5rem;
+            }
+            .highlight-section ul li {
+                font-size: 0.95rem;
+            }
+            .back-button {
+                margin: 2rem auto;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .plan-card {
+                width: 280px;
+                padding: 1.2rem;
+            }
+            .plans-container {
+                gap: 1rem;
+                padding: 0 0.5rem;
+                min-width: calc(3 * 280px + 2 * 1rem + 2 * 0.5rem);
+            }
+            .plan-card h3 {
+                font-size: 1.7rem;
+            }
+            .plan-card .price {
+                font-size: 2.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">Plans for English Stenographers</div>
+    <div class="tagline">
+        Unlock the Full Power of Steno Practice — With the Only Tool That Plays Any Dictation & Checks It Instantly
+    </div>
+
+    <div class="plans-container">
+        <ul id="common-benefits-list" style="display:none;">
+            <li>✅ Smart Transcription Checker — Paste or load any dictation & get instant feedback</li>
+            <li>✅ Instant 'Transcribe' Mode — Start typing after listening, check right away</li>
+            <li>✅ Mistake Breakdown — Omission, Substitution, Extra, Wrong Words</li>
+            <li>✅ Half Mistake Logic — Spelling and punctuation handled smartly</li>
+            <li>✅ Zero Chain Errors — Dynamic alignment prevents snowball effect</li>
+            <li>✅ Detailed Reports — Full/Half Mistakes, Accuracy %, Word Stats</li>
+        </ul>
+
+        <div class="plan-card gold-highlight">
+            <div>
+                <h3>🥇 Gold Pass</h3>
+                <div class="validity">1 Year Full Access</div>
+                <div class="price">₹1499 <span class="old-price">₹3999</span></div>
+                <div class="discount">🔥 63% OFF | 🎯 Best for Serious Aspirants</div>
+                <ul class="benefits-list">
+                    <li class="exclusive-feature-line">🎬&nbsp;**EXCLUSIVE: Master Any YouTube Dictation**<br>**Paste any link**, **set your speed (60–160 WPM)**, and transcribe like a pro!</li>
+                    <li>✅ Smart Transcription Checker — Paste or load any dictation & get instant feedback</li>
+                    <li>📚 All 24 Kailash Chandra Volumes — Preloaded & organized by volume and transcript</li>
+                    <li>✅ Instant 'Transcribe' Mode — Start typing after listening, check right away</li>
+                    <li>✅ Mistake Breakdown — Omission, Substitution, Extra, Wrong Words</li>
+                    <li>✅ Half Mistake Logic — Spelling and punctuation handled smartly</li>
+                    <li>✅ Zero Chain Errors — Dynamic alignment prevents snowball effect</li>
+                    <li>✅ Detailed Reports — Full/Half Mistakes, Accuracy %, Word Stats</li>
+                </ul>
+            </div>
+            <button onclick="window.location.href='https://your-gold-plan-payment-link.com'">Get Gold Pass</button>
+        </div>
+
+        <div class="plan-card silver-colors">
+            <div>
+                <h3>🥈 Silver Pass</h3>
+                <div class="validity">3 Months Full Access</div>
+                <div class="price">₹499 <span class="old-price">₹897</span></div>
+                <div class="discount">🚀 45% OFF | Best for Final Preparation</div>
+                <ul class="benefits-list">
+                    <li class="exclusive-feature-line">🎬&nbsp;**EXCLUSIVE: Master Any YouTube Dictation**<br>**Paste any link**, **set your speed (60–160 WPM)**, and transcribe like a pro!</li>
+                    <li>✅ Smart Transcription Checker — Paste or load any dictation & get instant feedback</li>
+                    <li>📚 All 24 Kailash Chandra Volumes — Preloaded & organized by volume and transcript</li>
+                    <li>✅ Instant 'Transcribe' Mode — Start typing after listening, check right away</li>
+                    <li>✅ Mistake Breakdown — Omission, Substitution, Extra, Wrong Words</li>
+                    <li>✅ Half Mistake Logic — Spelling and punctuation handled smartly</li>
+                    <li>✅ Zero Chain Errors — Dynamic alignment prevents snowball effect</li>
+                    <li>✅ Detailed Reports — Full/Half Mistakes, Accuracy %, Word Stats</li>
+                </ul>
+            </div>
+            <button onclick="window.location.href='https://your-silver-plan-payment-link.com'">Get Silver Pass</button>
+        </div>
+
+        <div class="plan-card bronze-colors">
+            <div>
+                <h3>🥉 Bronze Pass <br>(Quick Revision)</h3>
+                <div class="validity">1 Month Access</div>
+                <div class="price">₹199</div>
+                <ul class="benefits-list">
+                    <li class="exclusive-feature-line">🎬&nbsp;**EXCLUSIVE: Master Any YouTube Dictation**<br>**Paste any link**, **set your speed (60–160 WPM)**, and transcribe like a pro!</li>
+                    <li>✅ Smart Transcription Checker — Paste or load any dictation & get instant feedback</li>
+                    <li>📚 All 24 Kailash Chandra Volumes — Preloaded & organized by volume and transcript</li>
+                    <li>✅ Instant 'Transcribe' Mode — Start typing after listening, check right away</li>
+                    <li>✅ Mistake Breakdown — Omission, Substitution, Extra, Wrong Words</li>
+                    <li>✅ Half Mistake Logic — Spelling and punctuation handled smartly</li>
+                    <li>✅ Zero Chain Errors — Dynamic alignment prevents snowball effect</li>
+                    <li>✅ Detailed Reports — Full/Half Mistakes, Accuracy %, Word Stats</li>
+                </ul>
+            </div>
+            <button onclick="window.location.href='https://your-bronze-plan-payment-link.com'">Get Bronze Pass</button>
+        </div>
+    </div>
+
+    <div class="highlight-section">
+        <h4>💡 Only on Check My Steno:</h4>
+        <ul>
+            <li>🎬 Play any YouTube dictation + check your transcription instantly</li>
+            <li>📚 Full KC Volume access + **Real SSC-level evaluation**</li>
+        </ul>
+    </div>
+
+    <button class="back-button" onclick="window.location.href='test2.html'">← Back to Login</button>
+
+</body>
+</html>
