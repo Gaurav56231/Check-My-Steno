@@ -2,282 +2,305 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Check My Steno – Your SSC Practice Companion</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Check My Steno</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --primary: #6366f1;
-      --accent: #ec4899;
-      --gray: #f9fafb;
-      --text: #1f2937;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
+    html, body {
+      height: 100%;
+      overflow: hidden;
       font-family: 'Inter', sans-serif;
-      background: white;
-      color: var(--text);
-      line-height: 1.6;
     }
 
-    header {
-      padding: 1.5rem 2rem;
-      border-bottom: 1px solid #e5e7eb;
-      background: #fff;
-    }
-
-    .logo {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: var(--primary);
-    }
-
-    .hero {
+    .slider-wrapper {
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      padding: 4rem 2rem;
-      background: linear-gradient(to right, #eef2ff, #ffffff);
+      width: 300vw;
+      height: 100vh;
+      transition: transform 0.8s ease-in-out;
     }
 
-    .hero-text {
-      flex: 1;
-      min-width: 300px;
-      max-width: 600px;
+    .slide {
+      width: 100vw;
+      height: 100vh;
+      padding: 3rem 2rem;
+      overflow-y: auto;
     }
 
-    .hero-text h1 {
-      font-size: 3rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-
-    .hero-text p {
-      font-size: 1rem;
-      color: #374151;
-      margin: 1rem 0;
-    }
-
-    .hero-text .highlight {
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    .hero-button {
-      background: var(--primary);
+    /* Slide 1 */
+    .slide-1 {
+      background: radial-gradient(circle at top left, #6a11cb 0%, #2575fc 100%);
       color: white;
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      margin-top: 1.5rem;
-      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      animation: fadeIn 1.5s ease;
     }
 
-    .hero-button:hover {
-      background: #4f46e5;
+    .slide-1 h1 {
+      font-size: 3.2rem;
+      font-weight: 800;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+      animation: popUp 1s ease-out;
     }
 
-    .hero-image {
-      flex: 1;
-      min-width: 300px;
+    .slide-1 p {
+      font-size: 1.4rem;
+      margin-top: 1.2rem;
+      max-width: 800px;
+      color: #e0e0e0;
+      line-height: 1.6;
+      animation: fadeInUp 1.5s ease;
+    }
+
+    /* Slide 2 */
+    .slide-2 {
+      background: #fefefe;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
       text-align: center;
     }
 
-    .hero-image img {
-      max-width: 90%;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    .slide-2 h2 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 2rem;
+      color: #2b2b2b;
     }
 
-    .section {
-      padding: 4rem 2rem;
-      background: var(--gray);
-      text-align: center;
-    }
-
-    .section h2 {
-      font-size: 2rem;
-      margin-bottom: 1.5rem;
-      color: var(--text);
-    }
-
-    .features,
-    .how-it-works {
+    .features-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 2rem;
-      max-width: 1000px;
-      margin: auto;
+      gap: 1.8rem;
+      max-width: 1100px;
+      width: 100%;
+    }
+
+    .feature-card {
+      background: linear-gradient(145deg, #ffffff, #f0f0f0);
+      border-radius: 15px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+      transition: all 0.3s ease;
+      display: flex;
+      gap: 0.8rem;
+      align-items: flex-start;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .feature-card .emoji {
+      font-size: 1.5rem;
+      margin-top: 3px;
+      flex-shrink: 0;
+    }
+
+    .feature-card p {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #333;
       text-align: left;
     }
 
-    .feature-box,
-    .step-box {
+    /* Slide 3 */
+    .slide-3 {
+      background: #f7f9fc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+
+    .slide-3 h2 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      margin-bottom: 1.8rem;
+      color: #2a2a2a;
+    }
+
+    .comparison-table {
+      width: 100%;
+      max-width: 1000px;
+      border-collapse: collapse;
       background: white;
-      padding: 2rem;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.07);
     }
 
-    .feature-box strong,
-    .step-box strong {
-      font-size: 1.1rem;
-      display: block;
-      margin-bottom: 0.5rem;
+    .comparison-table th, .comparison-table td {
+      padding: 1rem;
+      border: 1px solid #e0e0e0;
+      font-size: 1.05rem;
     }
 
-    .meta {
-      padding: 2rem;
-      font-style: italic;
-      font-size: 0.95rem;
-      color: #6b7280;
+    .comparison-table th {
+      background: #f0f4f8;
+      font-weight: 700;
+    }
+
+    .highlight {
+      color: #0d6efd;
+      font-weight: bold;
+    }
+
+    .slide-3 p {
+      font-size: 1.05rem;
       max-width: 800px;
-      margin: auto;
-      background: #fff;
+      margin-top: 2rem;
+      color: #444;
     }
 
-    .about {
-      padding: 3rem 2rem;
-      max-width: 900px;
-      margin: auto;
-      text-align: center;
-    }
-
-    .about h3 {
-      font-size: 1.8rem;
-      margin-bottom: 1rem;
-    }
-
-    .about p {
-      color: #4b5563;
-      margin-bottom: 1rem;
-    }
-
-    .cta-banner {
-      background: linear-gradient(to right, #6366f1, #8b5cf6);
-      color: white;
-      text-align: center;
-      padding: 3rem 2rem;
-    }
-
-    .cta-banner h2 {
+    .nav-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
       font-size: 2rem;
-      margin-bottom: 1rem;
-    }
-
-    .cta-banner button {
-      background: white;
-      color: #4f46e5;
-      font-weight: 600;
-      padding: 0.8rem 1.8rem;
-      border: none;
+      background: rgba(0, 0, 0, 0.3);
+      color: #fff;
+      padding: 0.5rem 1rem;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 1rem;
+      z-index: 10;
     }
 
-    .cta-banner button:hover {
-      background: #e0e7ff;
+    .left-arrow {
+      left: 20px;
     }
 
-    footer {
-      text-align: center;
-      padding: 2rem;
-      font-size: 0.9rem;
-      color: #9ca3af;
-      border-top: 1px solid #e5e7eb;
+    .right-arrow {
+      right: 20px;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes popUp {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
 
     @media (max-width: 768px) {
-      .hero {
-        flex-direction: column;
-      }
-      .hero-text {
-        text-align: center;
+      .features-grid {
+        grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
-  <header>
-    <div class="logo">Check My Steno</div>
-  </header>
+  <!-- Arrows -->
+  <div class="nav-arrow left-arrow" onclick="manualSlide('left')">⬅</div>
+  <div class="nav-arrow right-arrow" onclick="manualSlide('right')">➡</div>
 
-  <!-- Hero -->
-  <section class="hero">
-    <div class="hero-text">
-      <h1>Introducing Your Steno™</h1>
-      <p><strong>Your Steno</strong> is our exclusive smart dictation feature inside <strong>Check My Steno</strong>, the all-in-one SSC steno platform.</p>
-      <p class="highlight">Paste. Play. Practice. Perfect.</p>
-      <p>🎧 The only tool that lets you paste any YouTube dictation link, control speed from 60–160 WPM, and get real-time error feedback as you type.</p>
-      <p class="highlight">🎯 Your Link. Your Speed. Your Accuracy.</p>
-      <button class="hero-button" onclick="parent.loadTool('practice-kc.html')">🚀 Start Practicing Now</button>
-    </div>
-    <div class="hero-image">
-      <img src="https://placehold.co/500x300?text=Your+Steno+Preview" alt="Your Steno Preview">
-    </div>
-  </section>
+  <!-- Slides -->
+  <div id="slider" class="slider-wrapper">
 
-  <!-- Features -->
-  <section class="section">
-    <h2>What Makes Your Steno™ Different?</h2>
-    <div class="features">
-      <div class="feature-box">
-        <strong>⚡ Real-Time Feedback</strong>
-        <p>Unlike traditional dictation apps, Your Steno highlights mistakes immediately so you can correct on the go — just like in a real test.</p>
-      </div>
-      <div class="feature-box">
-        <strong>🎚 Speed Control from 60–160 WPM</strong>
-        <p>Choose your speed and train progressively. Master dictations from beginner to topper level — all on your terms.</p>
-      </div>
-      <div class="feature-box">
-        <strong>📺 YouTube Dictation Engine</strong>
-        <p>Paste any YouTube dictation video. Whether it's SSC, High Court, or Hindi-English material — Your Steno adapts to your content.</p>
+    <!-- Slide 1 -->
+    <div class="slide slide-1">
+      <h1>🚀 Practice Smart. Transcribe Smarter.</h1>
+      <p>The ultimate SSC-level steno toolkit with AI-powered accuracy checks and lightning-fast YouTube dictation support.</p>
+    </div>
+
+    <!-- Slide 2 -->
+    <div class="slide slide-2">
+      <h2>✨ What Makes Check My Steno Special?</h2>
+      <div class="features-grid">
+        <div class="feature-card"><div class="emoji">🎯</div><p>Master any YouTube dictation with speed control (60–160 WPM)</p></div>
+        <div class="feature-card"><div class="emoji">🧠</div><p>Smart transcription checker with instant mistake analysis</p></div>
+        <div class="feature-card"><div class="emoji">🚫</div><p>No chain errors – thanks to dynamic alignment</p></div>
+        <div class="feature-card"><div class="emoji">📚</div><p>All 24 Kailash Chandra volumes preloaded for practice</p></div>
+        <div class="feature-card"><div class="emoji">📊</div><p>Detailed accuracy reports with full/half mistakes counted</p></div>
+        <div class="feature-card"><div class="emoji">🔁</div><p>Compare multiple attempts to track your improvement</p></div>
+        <div class="feature-card"><div class="emoji">🔤</div><p>Spelling heatmap that shows your most frequent errors</p></div>
+        <div class="feature-card"><div class="emoji">📝</div><p>Section-wise breakdown: Introduction, Body, Conclusion</p></div>
       </div>
     </div>
-  </section>
 
-  <!-- How It Works -->
-  <section class="section" style="background:#fff;">
-    <h2>How It Works</h2>
-    <div class="how-it-works">
-      <div class="step-box"><strong>1. Paste a YouTube Link</strong><p>Use any public dictation video link — English or Hindi.</p></div>
-      <div class="step-box"><strong>2. Set Your Speed</strong><p>Use the slider to choose WPM: 60, 80, 100… up to 160.</p></div>
-      <div class="step-box"><strong>3. Transcribe Live</strong><p>Watch the video play while you type. Errors are highlighted instantly.</p></div>
-      <div class="step-box"><strong>4. Analyze Your Accuracy</strong><p>View mistakes, get your word count, and track improvements.</p></div>
+    <!-- Slide 3 -->
+    <div class="slide slide-3">
+      <h2>💰 Compare & Decide</h2>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Market Tools</th>
+            <th class="highlight">Check My Steno</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Accuracy Check</td><td>Basic Manual</td><td class="highlight">AI Smart Auto Analysis</td></tr>
+          <tr><td>Spelling Filters</td><td>Limited</td><td class="highlight">Full Custom Filters</td></tr>
+          <tr><td>Dictation System</td><td>Upload Audio</td><td class="highlight">Use Any YouTube Video</td></tr>
+          <tr><td>Design & UX</td><td>Outdated</td><td class="highlight">Modern + Mobile Friendly</td></tr>
+          <tr><td>Pricing</td><td>₹500–₹1000/month</td><td class="highlight">Free or ₹199 Lifetime</td></tr>
+        </tbody>
+      </table>
+      <p>Why overpay for old tools? <strong>Check My Steno</strong> gives you everything at a one-time cost with better performance.</p>
     </div>
-  </section>
 
-  <!-- Meta Description -->
-  <section class="meta">
-    ✅ <strong>DictaFlex™</strong> – The only SSC Steno dictation tool that lets you transcribe any YouTube video at any speed with smart error detection. Practice real-time, improve faster, and master dictation like never before.
-  </section>
+  </div>
 
-  <!-- About -->
-  <section class="about">
-    <h3>About Check My Steno</h3>
-    <p><strong>Check My Steno</strong> is a full practice system built for SSC Steno aspirants. It's more than just typing tests — it's your personal lab for speed, accuracy, and confidence.</p>
-    <p>📌 Use our <strong>Transcription Checker</strong> to upload and auto-check dictations.<br/>
-       📊 Get test-wise insights with <strong>Test Analysis</strong>.<br/>
-       🎯 And practice live using <strong>Your Steno™</strong> — our exclusive YouTube-based dictation trainer.</p>
-  </section>
+  <!-- Script -->
+  <script>
+    let slider = document.getElementById("slider");
+    let currentIndex = 0;
+    let interval;
 
-  <!-- Final CTA -->
-  <section class="cta-banner">
-    <h2>Train like a topper with Your Steno™</h2>
-    <button onclick="parent.loadTool('practice-kc.html')">Start Now</button>
-  </section>
+    function startAutoSlide() {
+      interval = setInterval(() => {
+        currentIndex = (currentIndex + 1) % 3;
+        slideTo(currentIndex);
+      }, 6000);
+    }
 
-  <!-- Footer -->
-  <footer>
-    © 2025 Check My Steno. Built with precision. Powered by Your Steno™.
-  </footer>
+    function stopAutoSlide() {
+      clearInterval(interval);
+    }
 
+    function slideTo(index) {
+      currentIndex = index;
+      slider.style.transform = `translateX(-${index * 100}vw)`;
+    }
+
+    function manualSlide(direction) {
+      if (direction === 'left') {
+        currentIndex = (currentIndex - 1 + 3) % 3;
+      } else {
+        currentIndex = (currentIndex + 1) % 3;
+      }
+      slideTo(currentIndex);
+    }
+
+    // Pause auto slide on hover
+    document.querySelectorAll('.slide').forEach(slide => {
+      slide.addEventListener('mouseenter', stopAutoSlide);
+      slide.addEventListener('mouseleave', startAutoSlide);
+    });
+
+    // Start
+    startAutoSlide();
+  </script>
 </body>
 </html>
